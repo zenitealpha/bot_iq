@@ -281,7 +281,7 @@ def bot_mhi(message):
     markup.row(itembtnc)
     markup.row(itembtnd, itembtne)
     bot.send_message(message.chat.id, "Bot de MHI", reply_markup=markup)
-
+    ligado=True
     @bot.message_handler(func=lambda message: message.text == '✅Ligar')
     def ligar(message):
 
@@ -409,7 +409,8 @@ def bot_mhi(message):
         bot.send_message(
             message.chat.id, "✅Aguarde os resultados das suas operações✅\n" +
             "\t\t\tProcessando...")
-        while True:
+        
+        while ligado:
             minutos = float(((datetime.now()).strftime('%M.%S'))[1:])
             entrar = True if (minutos >= 4.58
                               and minutos <= 5) or minutos >= 9.58 else False
@@ -469,16 +470,14 @@ def bot_mhi(message):
                                     valor = valor if valor > 0 else float(
                                         '-' + str(abs(valor_entrada)))
                                     lucro += round(valor, 2)
-                                    
+
                                     msg = '''
-                                    💹Resultado da operação💹\n
+                            💹Resultado da operação💹\n
 
-                                    RESULTADO: ''' + ('✅WIN' if valor > 0 else '🚨LOSS') + '''
-                                    LUCRO: 💲''' + str(round(valor, 2)) + '''\n
-
-                                    ''' + (str(i)+ ' ♻GALE' if i > 0 else '') + '''\n'''
-                                    bot.send_message(
-                                        message.chat.id,msg)
+                            RESULTADO: ''' + ('✅WIN' if valor > 0 else '🚨LOSS') + '''
+                            LUCRO: 💲''' + str(round(valor, 2)) + '''\n
+                            ''' + (str(i)+ ' ♻GALE' if i > 0 else '') + '''\n'''
+                                    bot.send_message(message.chat.id,msg)
 
                                     valor_entrada = Martingale(
                                         valor_entrada, payout)
@@ -511,15 +510,12 @@ def bot_mhi(message):
                             break
                             return
 
-                @bot.message_handler(
-                    func=lambda message: message.text == '🔴Desligar')
-                def desligar(message):
-                    bot.send_message(message.chat.id,
-                                     "✅Bot de MHI desligado!✅")
-                    sys.exit()
-
-            time.sleep(1)
-
+    @bot.message_handler(func=lambda message: message.text == '🔴Desligar')
+    def desligar(message):
+        ligado==False
+        bot.send_message(message.chat.id,"✅Bot de MHI desligado!✅")
+        
+            
 
 @bot.message_handler(func=lambda message: message.text == '🆘Ajuda')
 def ajuda(message):
@@ -1037,3 +1033,4 @@ time.sleep(1)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
+
