@@ -469,16 +469,16 @@ def bot_mhi(message):
                                     valor = valor if valor > 0 else float(
                                         '-' + str(abs(valor_entrada)))
                                     lucro += round(valor, 2)
+                                    
+                                    msg = '''
+                                    💹Resultado da operação💹\n
 
+                                    RESULTADO: ''' + ('✅WIN' if valor > 0 else '🚨LOSS') + '''
+                                    LUCRO: 💲''' + str(round(valor, 2)) + '''\n
+
+                                    ''' + (str(i)+ ' ♻GALE' if i > 0 else '') + '''\n'''
                                     bot.send_message(
-                                        message.chat.id,
-                                        '💹Resultado da operação💹 \n{}'.format(
-                                            '✅WIN /'
-                                            if valor > 0 else '🚨LOSS /',
-                                            str(round(valor, 2)), '/',
-                                            ('💲', str(round(lucro, 2))),
-                                            ('/ ' + str(i) +
-                                             ' ♻GALE' if i > 0 else '')))
+                                        message.chat.id,msg)
 
                                     valor_entrada = Martingale(
                                         valor_entrada, payout)
@@ -516,7 +516,7 @@ def bot_mhi(message):
                 def desligar(message):
                     bot.send_message(message.chat.id,
                                      "✅Bot de MHI desligado!✅")
-                    return
+                    sys.exit()
 
             time.sleep(1)
 
