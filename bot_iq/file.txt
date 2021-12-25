@@ -1,1 +1,0 @@
-[ContentFile(path=".gitignore"), ContentFile(path="1956212268.txt"), ContentFile(path="LICENSE"), ContentFile(path="Procfile"), ContentFile(path="README.md"), ContentFile(path="cliente_permitido.txt"), ContentFile(path="main.py"), ContentFile(path="requirements.txt")]
