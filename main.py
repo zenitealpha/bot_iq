@@ -1253,7 +1253,6 @@ def process_guardar_sinais_step(message):
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
             
-time.sleep(0,5)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
