@@ -47,6 +47,7 @@ class lista_sinais_config:
         self.stop_gain = None
 
 global ligado
+global ligado_sinais
 
 def cliente_permitido(id):
     valores = []
@@ -274,8 +275,8 @@ def bot_lista_sinais(message):
 
     @bot.message_handler(func=lambda message: message.text == '✅Ligar Bot de Sinais')
     def ligar_lista(message):
-        global ligado
-        ligado = True
+        global ligado_sinais
+        ligado_sinais = True
         bot.send_message(message.chat.id, "✅Bot de Lista de sinais✅")
         chat_id = message.chat.id
         dados_config_lista_sinais = config_lista_sinais[chat_id]
@@ -390,7 +391,7 @@ def bot_lista_sinais(message):
         ops=0
         try:
 
-            while True:
+            while ligado_sinais:
                 sinais = get_sinal()
 
                 if len(sinais) > 0:
@@ -409,7 +410,7 @@ def bot_lista_sinais(message):
                                                                 "Paridade: "+str(par)+
                                                                 "\nDireção: "+str(dir)+
                                                                 "\nTime Frame: "+str(time_frame)+
-                                                                "\nPayout: "+str(payout))
+                                                                "\nPayout: "+str(payout*100))
                             if status:
                                 while True:
                                     try:
@@ -452,8 +453,10 @@ def bot_lista_sinais(message):
 
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Bot de Sinais')
     def desligar_lista(message):
+        global ligado_sinais
+        ligado_sinais = False
         bot.send_message(message.chat.id,"✅Bot de Lista de sinais desligado!✅")
-        exit()
+        return
 
 @bot.message_handler(func=lambda message: message.text == 'MHI')
 def bot_mhi(message):
@@ -687,6 +690,7 @@ def bot_mhi(message):
         global ligado
         ligado = False
         bot.send_message(message.chat.id,"✅Bot de MHI desligado!✅")
+        return
         
 @bot.message_handler(func=lambda message: message.text == '🆘Ajuda')
 def ajuda(message):
@@ -1249,7 +1253,7 @@ def process_guardar_sinais_step(message):
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
             
-time.sleep(1)
+time.sleep(0,5)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
