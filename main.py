@@ -4,9 +4,18 @@ from iqoptionapi.stable_api import IQ_Option
 from datetime import datetime, timezone
 from telebot import types, util
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+import base64
+from github import Github
+import requests
+from pprint import pprint
 
 api_bot = "2118641728:AAG5uHqiYHEh3WRYc-gOtHSLOvAmGY4sh7U"
 bot = telebot.TeleBot(api_bot)
+g = Github(login_or_token="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")
+repo = g.get_user().get_repo('bot_iq')
+all_files = []
+contents = repo.get_contents("")
+content = str(contents)
 
 login_dict = {}
 class login:
@@ -87,11 +96,17 @@ def send_welcome(message):
         bot.send_message(message.chat.id,"Bem-vindo de Volta " + message.from_user.first_name +
             "\nPara atualização do plano, contacte: @Zcreations1" +
             "\nNão te esqueças de fornecer a ele o seu ID:"+str(message.from_user.id),reply_markup=markup)
-        
+        '''
         id_user = message.from_user.id
         file = open("{}.txt".format(id_user), 'a+')
         if (not nao_exist(str(id_user))):
             file.close()
+        '''
+        git_file ='{}.txt'.format(message.chat.id)
+        if git_file in content:
+            pass
+        else:
+            repo.create_file(git_file, "committing files", '')
 
     elif message.chat.type == 'private' and id_telegram != id_user:
         #message obtem os dados do usuário: id, nomes, data da sms, e o testo ou conteúdo enviado
@@ -102,11 +117,18 @@ def send_welcome(message):
                         "\nContacte @Zcreations1 para obter acesso ao bot! ")
 
     elif message.chat.type == 'private' and id_telegram == id_user and estado == 1 and plano == 'super_admin':
-
+        '''
         id_user = message.from_user.id
         file = open("{}.txt".format(id_user), 'a+')
         if (not nao_exist(str(id_user))):
             file.close()
+        '''
+        git_file ='{}.txt'.format(message.chat.id)
+        if git_file in content:
+            pass
+        else:
+            repo.create_file(git_file, "committing files", '')
+
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('✅Add usuário')
         itembtnb = types.KeyboardButton('Excluir usuário')
@@ -124,12 +146,18 @@ def send_welcome(message):
                          reply_markup=markup)
 
     elif message.chat.type == 'private' and id_telegram == id_user and estado == 1 and plano == 'admin':
-
+        '''
         id_user = message.from_user.id
         file = open("{}.txt".format(id_user), 'a+')
         if (not nao_exist(str(id_user))):
             file.close()
-
+        '''
+        git_file ='{}.txt'.format(message.chat.id)
+        if git_file in content:
+            pass
+        else:
+            repo.create_file(git_file, "committing files", '')
+            
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('Prestar Suporte')
         itembtnb = types.KeyboardButton('Dados do Usuário')
