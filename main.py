@@ -102,12 +102,7 @@ def send_welcome(message):
         if (not nao_exist(str(id_user))):
             file.close()
         '''
-        git_file ='{}.txt'.format(message.chat.id)
-        if git_file in content:
-            pass
-        else:
-            repo.create_file(git_file, "committing files", '')
-
+        
     elif message.chat.type == 'private' and id_telegram != id_user:
         #message obtem os dados do usuário: id, nomes, data da sms, e o testo ou conteúdo enviado
         #a linha abaixo recupera o id, primeiro nome, e o último nome e enviar uma sms ao usuário de boas vindas
@@ -123,12 +118,6 @@ def send_welcome(message):
         if (not nao_exist(str(id_user))):
             file.close()
         '''
-        git_file ='{}.txt'.format(message.chat.id)
-        if git_file in content:
-            pass
-        else:
-            repo.create_file(git_file, "committing files", '')
-
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('✅Add usuário')
         itembtnb = types.KeyboardButton('Excluir usuário')
@@ -152,12 +141,6 @@ def send_welcome(message):
         if (not nao_exist(str(id_user))):
             file.close()
         '''
-        git_file ='{}.txt'.format(message.chat.id)
-        if git_file in content:
-            pass
-        else:
-            repo.create_file(git_file, "committing files", '')
-            
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('Prestar Suporte')
         itembtnb = types.KeyboardButton('Dados do Usuário')
@@ -913,10 +896,13 @@ def process_add_lista_step(message):
         try:
             lista = message.text
             if lista != '':
-                id_user = message.from_user.id
-                file = open("{}.txt".format(id_user), 'a+')
-                file.write("{}\n".format(lista))
-                file.close()
+                git_file ='{}.txt'.format(message.chat.id)
+                if git_file in content:
+                    contents = repo.get_contents("{}.txt".format(message.chat.id))
+                    repo.delete_file(contents.path, "remove {}.txt".format(message.chat.id), contents.sha)
+                    repo.create_file(git_file, "committing files", lista)
+                else:
+                    repo.create_file(git_file, "committing files", lista)
             else:
                 bot.reply_to(message, 'Envie pelo menos um sinal')
 
@@ -1262,7 +1248,6 @@ def process_guardar_sinais_step(message):
                 bot_lista_sinais(message)
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
             
 time.sleep(1)
 bot.enable_save_next_step_handlers(delay=2)
