@@ -27,6 +27,18 @@ class mhi_config:
         self.stop_loss = None
         self.stop_gain = None
 
+config_lista_sinais = {}
+class lista_sinais_config:
+    def __init__(self, conta):
+        self.conta = conta
+        self.operacao = None
+        self.valor_entrada = None
+        self.martingale = None
+        self.stop_loss = None
+        self.stop_gain = None
+
+global ligado
+
 def cliente_permitido(id):
     valores = []
     arq_dados = 'cliente_permitido.txt'
@@ -48,7 +60,6 @@ def cliente_permitido(id):
 
     return valores
 
-
 def nao_exist(id):
     result = False
     file = open("{}.txt".format(id), 'r')
@@ -57,7 +68,6 @@ def nao_exist(id):
             result = True
     file.close()
     return result
-
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -74,38 +84,28 @@ def send_welcome(message):
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('🤖Listar Bots')
         markup.row(itembtna)
-        bot.send_message(
-            message.chat.id,
-            "Bem-vindo de Volta " + message.from_user.first_name +
+        bot.send_message(message.chat.id,"Bem-vindo de Volta " + message.from_user.first_name +
             "\nPara atualização do plano, contacte: @Zcreations1" +
-            "\nNão te esqueças de fornecer a ele o seu ID:" +
-            str(message.from_user.id),
-            reply_markup=markup)
+            "\nNão te esqueças de fornecer a ele o seu ID:"+str(message.from_user.id),reply_markup=markup)
+        
         id_user = message.from_user.id
         file = open("{}.txt".format(id_user), 'a+')
         if (not nao_exist(str(id_user))):
-            file.close()
-        else:
-            file.write("{}\n".format(message.text))
             file.close()
 
     elif message.chat.type == 'private' and id_telegram != id_user:
         #message obtem os dados do usuário: id, nomes, data da sms, e o testo ou conteúdo enviado
         #a linha abaixo recupera o id, primeiro nome, e o último nome e enviar uma sms ao usuário de boas vindas
-        bot.send_message(
-            message.chat.id, "Olá tudo bem " + message.from_user.first_name +
-            " " + message.from_user.last_name + "?" +
-            "\nSeja bem vindo(a) ao ROBÔ FÉNIX este é o seu ID: " +
-            str(message.chat.id) +
-            "\nContacte @Zcreations1 para obter acesso ao bot! ")
+        bot.send_message(message.chat.id, "Olá tudo bem " + message.from_user.first_name +
+                        " " + message.from_user.last_name + "?" +
+                        "\nSeja bem vindo(a) ao ROBÔ FÉNIX este é o seu ID: " +str(message.chat.id) +
+                        "\nContacte @Zcreations1 para obter acesso ao bot! ")
 
     elif message.chat.type == 'private' and id_telegram == id_user and estado == 1 and plano == 'super_admin':
 
+        id_user = message.from_user.id
         file = open("{}.txt".format(id_user), 'a+')
         if (not nao_exist(str(id_user))):
-            file.close()
-        else:
-            file.write("{}\n".format(message.text))
             file.close()
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('✅Add usuário')
@@ -125,11 +125,9 @@ def send_welcome(message):
 
     elif message.chat.type == 'private' and id_telegram == id_user and estado == 1 and plano == 'admin':
 
+        id_user = message.from_user.id
         file = open("{}.txt".format(id_user), 'a+')
         if (not nao_exist(str(id_user))):
-            file.close()
-        else:
-            file.write("{}\n".format(message.text))
             file.close()
 
         markup = types.ReplyKeyboardMarkup(row_width=-1)
@@ -150,7 +148,6 @@ def send_welcome(message):
     elif message.chat.type != 'private':
         bot.send_message(message.chat.id,
                          "Não tens permissão para usar este Bot")
-
 
 @bot.message_handler(func=lambda message: message.text == '🤖Listar Bots')
 def listar_bots(message):
@@ -248,46 +245,29 @@ def listar_bots(message):
                          "====Bots Disponíveis====",
                          reply_markup=markup)
 
-
 @bot.message_handler(func=lambda message: message.text == 'Lista de Sinais')
 def bot_lista_sinais(message):
 
     markup = types.ReplyKeyboardMarkup(row_width=-1)
-    itembtna = types.KeyboardButton('✅Ligar')
-    itembtnb = types.KeyboardButton('Desligar')
-    itembtnc = types.KeyboardButton('Sinais')
-    itembtnd = types.KeyboardButton('Configurações')
-    itembtne = types.KeyboardButton('Ajuda')
+    itembtna = types.KeyboardButton('✅Ligar Bot de Sinais')
+    itembtnb = types.KeyboardButton('🔴Desligar Bot de Sinais')
+    itembtnc = types.KeyboardButton('Adicionar Sinais')
+    itembtnd = types.KeyboardButton('⚙Configurar Bot de Sinais')
+    itembtne = types.KeyboardButton('🆘Ajuda')
     itembtnf = types.KeyboardButton('🤖Listar Bots')
     markup.row(itembtna, itembtnb)
     markup.row(itembtnd)
     markup.row(itembtnc, itembtne)
     markup.row(itembtnf)
-    bot.send_message(message.chat.id,
-                     "Bot de lista de sinais",
-                     reply_markup=markup)
+    bot.send_message(message.chat.id,"Bot de lista de sinais",reply_markup=markup)
 
-
-@bot.message_handler(func=lambda message: message.text == 'MHI')
-def bot_mhi(message):
-
-    markup = types.ReplyKeyboardMarkup(row_width=-1)
-    itembtna = types.KeyboardButton('✅Ligar')
-    itembtnb = types.KeyboardButton('🔴Desligar')
-    itembtnc = types.KeyboardButton('⚙Configuração')
-    itembtnd = types.KeyboardButton('🆘Ajuda')
-    itembtne = types.KeyboardButton('🤖Listar Bots')
-    markup.row(itembtna, itembtnb)
-    markup.row(itembtnc)
-    markup.row(itembtnd, itembtne)
-    bot.send_message(message.chat.id, "Bot de MHI", reply_markup=markup)
-    ligado=True
-    @bot.message_handler(func=lambda message: message.text == '✅Ligar')
-    def ligar(message):
-
-        bot.send_message(message.chat.id, "✅Bot de MHI ligado✅")
+    @bot.message_handler(func=lambda message: message.text == '✅Ligar Bot de Sinais')
+    def ligar_lista(message):
+        global ligado
+        ligado = True
+        bot.send_message(message.chat.id, "✅Bot de Lista de sinais✅")
         chat_id = message.chat.id
-        dados_config_mhi = config_mhi[chat_id]
+        dados_config_lista_sinais = config_lista_sinais[chat_id]
         dados_config_login = login_dict[chat_id]
         id_user = message.from_user.id
         dados_cli = cliente_permitido(str(id_user))
@@ -305,6 +285,195 @@ def bot_mhi(message):
                 bot.send_message(message.chat.id, '✅Stop Gain Batido!')
                 return
 
+        def Martingale(valor, payout):
+            lucro_esperado = valor * payout
+            perca = float(valor)
+
+            while True:
+                if round(valor * payout, 2) > round(abs(perca) + lucro_esperado, 2):
+                    return round(valor, 2)
+                    break
+                valor += 0.01
+
+        def Payout(par):
+            API.subscribe_strike_list(par, 1)
+            while True:
+                d = API.get_digital_current_profit(par, 1)
+                if d != False:
+                    d = round(int(d) / 100, 2)
+                    break
+                time.sleep(1)
+            API.unsubscribe_strike_list(par, 1)
+
+            return d
+
+        if (dados_config_login.email == None) or (dados_config_login.senha == None):
+            bot.send_message(message.chat.id,'🚨Erro verifique os dados de Login, tente novamente🚨')
+        else:
+            usuario = dados_config_login.email  # input("Digite o usuário da IQ Option: ")
+            senha = dados_config_login.senha  #getpass.getpass(f"Digite a senha da IQ Option: ")
+            API = IQ_Option(usuario, senha)
+            print(API.connect())
+
+        if API.check_connect():
+            bot.send_message(message.chat.id, '✅Conectado com sucesso!✅')
+        else:
+            bot.send_message(message.chat.id, '🚨Erro ao se conectar🚨')
+            return
+
+        try:
+            conta = int(dados_config_lista_sinais.conta)  
+            if int(conta) == 1:
+                API.change_balance('PRACTICE')
+            elif int(conta) == 2:
+                API.change_balance('REAL')  # PRACTICE / REAL
+            else:
+                bot.send_message(message.chat.id,
+                                 "❌Erro ao escolher o tipo de conta❌")
+        except:
+            bot.send_message(message.chat.id, "❌Erro, tente novamente❌")
+            return
+
+        while True:
+            try:
+                operacao = int(dados_config_lista_sinais.operacao)  
+                if operacao > 0 and operacao < 3: break
+            except:
+                bot.send_message(message.chat.id,'❌Opção de escolha entre digital e binária errada❌')
+                break
+
+        def get_sinal():
+            sinais=[]
+            arq_sinais = "{}.txt".format(id_user)
+            try:
+                file = open(arq_sinais, 'r').read()
+            except:
+                print("Todos os sinais já foram analisados.")
+                exit()
+            for index,sinal in enumerate(file.split('\n')):
+                if len(sinal) > 0 and sinal != '':
+                    sinal_ = sinal.split(',')
+                    #formato da lista: TIMESTAMP,PARIDADE,call,1
+                    if sinal_[0] == datetime.now().strftime('%H:%M'):
+
+                            sinais.append({'timestamp': sinal_[0],
+                                            'par': sinal_[1],
+                                            'dir': sinal_[2],
+                                            'timeframe': sinal_[3]})
+                            open(arq_sinais, 'w').write(file.replace(sinal, ''))
+            return sinais
+
+        valor_entrada = float(dados_config_lista_sinais.valor_entrada)
+        valor_entrada_b = float(valor_entrada)
+
+        martingale = int(dados_config_lista_sinais.martingale)
+        martingale += 1
+
+        stop_loss = float(dados_config_lista_sinais.stop_loss)
+        stop_gain = float(dados_config_lista_sinais.stop_gain)
+
+        lucro = 0
+        bot.send_message(
+            message.chat.id, "✅Aguarde os resultados das suas operações✅\n" +
+            "\t\t\tProcessando...")
+        ops=0
+        try:
+
+            while True:
+                sinais = get_sinal()
+
+                if len(sinais) > 0:
+                    for data in sinais:
+                        valor_entrada = valor_entrada_b
+                        par=str(data['par']).upper()
+                        dir=str(data['dir']).lower()
+                        time_frame=int(data['timeframe'])
+                        payout = Payout(par)    
+
+                        valor_entrada = valor_entrada_b
+                        for i in range(martingale):
+                        
+                            status,id = API.buy_digital_spot(par, valor_entrada, dir, time_frame) if operacao == 1 else API.buy(valor_entrada, par, dir, time_frame)
+                            bot.send_message(message.chat.id,"✅Uma operações em andamento✅\n" +
+                                                                "Paridade: "+str(par)+
+                                                                "\nDireção: "+str(dir)+
+                                                                "\nTime Frame: "+str(time_frame)+
+                                                                "\nPayout: "+str(payout))
+                            if status:
+                                while True:
+                                    try:
+                                        status,valor = API.check_win_digital_v2(id) if operacao == 1 else API.check_win_v3(id)
+                                    except:
+                                        status = True
+                                        valor = 0
+                                    
+                                    if status:
+                                        valor = valor if valor > 0 else float('-' + str(abs(valor_entrada)))
+                                        lucro += round(valor, 2)
+                                        
+                                        msg = '''
+                                💹Resultado da operação💹\n
+
+                                RESULTADO: ''' + ('✅WIN' if valor > 0 else '🚨LOSS') + '''
+                                LUCRO: 💲''' + str(round(valor, 2)) + '''\n
+                                ''' + (str(i)+ ' ♻GALE' if i > 0 else '') + '''\n'''
+                                        bot.send_message(message.chat.id,msg)
+                                    
+                                        valor_entrada = Martingale(valor_entrada, payout)
+                                        if lucro <= float('-' +str(abs(stop_loss))):
+                                            bot.send_message(message.chat.id,'🔴Stop Loss batido!')
+                                            return
+                                            break
+                                        if lucro >= float(abs(stop_gain)):
+                                            bot.send_message(message.chat.id,'✅Stop Gain Batido!')
+                                            return
+                                            break
+                                        if valor > 0 : break
+                                        break
+                                if valor > 0 : break
+                            else:
+                                bot.send_message(message.chat.id,'🚨ERRO AO REALIZAR OPERAÇÃO\n' +
+                                'O activo selecionado não se encontra aberto.')
+                                break
+                print(ops+1, 'Operações abertas |', datetime.now().strftime('%H:%M:%S'), end='\r')
+        except Exception as e:
+                        print("O Bot encontrou o erro abaixo:\n",e+'')
+
+    @bot.message_handler(func=lambda message: message.text == '🔴Desligar Bot de Sinais')
+    def desligar_lista(message):
+        bot.send_message(message.chat.id,"✅Bot de Lista de sinais desligado!✅")
+        exit()
+
+@bot.message_handler(func=lambda message: message.text == 'MHI')
+def bot_mhi(message):
+    markup = types.ReplyKeyboardMarkup(row_width=-1)
+    itembtna = types.KeyboardButton('✅Ligar Bot de MHI')
+    itembtnb = types.KeyboardButton('🔴Desligar Bot de MHI')
+    itembtnc = types.KeyboardButton('⚙Configurar Bot de MHI')
+    itembtnd = types.KeyboardButton('🆘Ajuda')
+    itembtne = types.KeyboardButton('🤖Listar Bots')
+    markup.row(itembtna, itembtnb)
+    markup.row(itembtnc)
+    markup.row(itembtnd, itembtne)
+    bot.send_message(message.chat.id, "Bot de MHI", reply_markup=markup)
+    
+    @bot.message_handler(func=lambda message: message.text == '✅Ligar Bot de MHI')
+    def ligar(message):
+        global ligado
+        ligado = True
+        bot.send_message(message.chat.id, "✅Bot de MHI ligado✅")
+        chat_id = message.chat.id
+        dados_config_mhi = config_mhi[chat_id]
+        dados_config_login = login_dict[chat_id]
+        id_user = message.from_user.id
+        dados_cli = cliente_permitido(str(id_user))
+        if len(dados_cli) > 0:
+            for data in dados_cli:
+                id_telegram = int(data['id_telegram'])
+                estado = int(data['estado'])
+                plano = str(data['plano'])
+                mes_espiracao = int(data['mes_espiracao'])
+        
         def Martingale(valor, payout):
             lucro_esperado = valor * payout
             perca = float(valor)
@@ -479,20 +648,14 @@ def bot_mhi(message):
                             ''' + (str(i)+ ' ♻GALE' if i > 0 else '') + '''\n'''
                                     bot.send_message(message.chat.id,msg)
 
-                                    valor_entrada = Martingale(
-                                        valor_entrada, payout)
+                                    valor_entrada = Martingale(valor_entrada, payout)
 
-                                    if lucro <= float('-' +
-                                                      str(abs(stop_loss))):
-                                        bot.send_message(
-                                            message.chat.id,
-                                            '🔴Stop Loss batido!')
+                                    if lucro <= float('-' +str(abs(stop_loss))):
+                                        bot.send_message(message.chat.id,'🔴Stop Loss batido!')
                                         return
                                         break
                                     if lucro >= float(abs(stop_gain)):
-                                        bot.send_message(
-                                            message.chat.id,
-                                            '✅Stop Gain Batido!')
+                                        bot.send_message(message.chat.id,'✅Stop Gain Batido!')
                                         return
                                         break
 
@@ -503,25 +666,20 @@ def bot_mhi(message):
                             if valor > 0: break
 
                         else:
-                            bot.send_message(
-                                message.chat.id,
-                                '🚨ERRO AO REALIZAR OPERAÇÃO\n' +
+                            bot.send_message(message.chat.id,'🚨ERRO AO REALIZAR OPERAÇÃO\n' +
                                 'O activo selecionado não se encontra aberto.')
                             break
                             return
 
-    @bot.message_handler(func=lambda message: message.text == '🔴Desligar')
+    @bot.message_handler(func=lambda message: message.text == '🔴Desligar Bot de MHI')
     def desligar(message):
-        ligado==False
+        global ligado
+        ligado = False
         bot.send_message(message.chat.id,"✅Bot de MHI desligado!✅")
         
-            
-
 @bot.message_handler(func=lambda message: message.text == '🆘Ajuda')
 def ajuda(message):
-    bot.send_message(
-        message.chat.id,
-        "Olá " + message.from_user.first_name + " caso tenhas algum\n" +
+    bot.send_message(message.chat.id,"Olá " + message.from_user.first_name + " caso tenhas algum\n" +
         "problema com o bot, contacte o suporte--> @Zcreations1")
 
 @bot.message_handler(func=lambda message: message.text == 'Estratégia Chinesa')
@@ -535,9 +693,7 @@ def bot_estrategia_chinesa(message):
     markup.row(itembtna, itembtnb)
     markup.row(itembtnc)
     markup.row(itembtnd, itembtne)
-    bot.send_message(message.chat.id,
-                     "Bot de Estratégia Chinesa",
-                     reply_markup=markup)
+    bot.send_message(message.chat.id,"Bot de Estratégia Chinesa",reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text == 'CopyTrade')
 def bot_copytrade(message):
@@ -563,12 +719,9 @@ def bot_estrategia_berman(message):
     markup.row(itembtna, itembtnb)
     markup.row(itembtnc)
     markup.row(itembtnd, itembtne)
-    bot.send_message(message.chat.id,
-                     "Bot de Estratégia Berman",
-                     reply_markup=markup)
+    bot.send_message(message.chat.id,"Bot de Estratégia Berman",reply_markup=markup)
 
-@bot.message_handler(
-    func=lambda message: message.text == 'Catalogador de Sinais')
+@bot.message_handler(func=lambda message: message.text == 'Catalogador de Sinais')
 async def bot_catalogador(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
     itembtna = types.KeyboardButton('✅Ligar')
@@ -579,12 +732,9 @@ async def bot_catalogador(message):
     markup.row(itembtna, itembtnb)
     markup.row(itembtnc)
     markup.row(itembtnd, itembtne)
-    bot.send_message(message.chat.id,
-                     "Catalogação de Sinais",
-                     reply_markup=markup)
+    bot.send_message(message.chat.id,"Catalogação de Sinais",reply_markup=markup)
 
-@bot.message_handler(
-    func=lambda message: message.text == 'Indicadores Técnicos')
+@bot.message_handler(func=lambda message: message.text == 'Indicadores Técnicos')
 def bot_indicadores_tecnicos(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
     itembtna = types.KeyboardButton('✅Ligar')
@@ -695,7 +845,6 @@ def process_senha_step(message):
     except Exception as e:
         bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-
 def salvar_iq_option(message):
     try:
         chat_id = message.chat.id
@@ -717,320 +866,377 @@ def salvar_iq_option(message):
                 str(dados.email) + "\nSenha: " + str(dados.senha))
             listar_bots(message)
 
-        elif estado == 0 or (salvar == u'🔙Cancelar'):
+        elif (salvar == u'🔙Cancelar'):
             dados.email = None
             dados.senha = None
             listar_bots(message)
     except Exception as e:
-        bot.reply_to(
-            message, 'Email/Senha não foram salvos!' +
+        bot.reply_to(message, 'Email/Senha não foram salvos!' +
             '\nOpção inválida por falta de email e senha')
 
-@bot.message_handler(func=lambda message: message.text == '⚙Configuração')
+@bot.message_handler(func=lambda message: message.text == 'Adicionar Sinais')
+def add_lista(message):
+        msg=bot.reply_to(message, "✅Digite sua lista de sinais✅"
+                                         +"\nPara tal tenha em conta o seguinte formato:\n"+
+                                         "07:25,EURUSD-OTC,call,5 ou 07:25,EURUSD,put,1")
+        bot.register_next_step_handler(msg, process_add_lista_step)
+
+def process_add_lista_step(message):
+        try:
+            lista = message.text
+            if lista != '':
+                id_user = message.from_user.id
+                file = open("{}.txt".format(id_user), 'a+')
+                file.write("{}\n".format(lista))
+                file.close()
+            else:
+                bot.reply_to(message, 'Envie pelo menos um sinal')
+
+            bot_lista_sinais(message)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
+@bot.message_handler(func=lambda message: message.text == '⚙Configurar Bot de MHI')
 def config_do_mhi(message):
-    msg = bot.reply_to(
-        message, "⚙Configurações do HMI⚙\n" +
-        "Escolha em qual conta Operar:\n 1 - Treinamento\n 2 - REAL:")
-    bot.register_next_step_handler(msg, process_conta_step)
+        msg = bot.reply_to(
+            message,"Escolha em qual conta Operar:\n 1 - Treinamento\n 2 - REAL:")
+        bot.register_next_step_handler(msg, process_conta_step)
 
 def process_conta_step(message):
-    try:
-        chat_id = message.chat.id
-        conta = message.text
-        if (not conta.isdigit()):
-            msg = bot.reply_to(
-                message,
-                '❌Opção inválida, escolha: \n1 para conta de Treinamento \n2 para Real'
-            )
-            bot.register_next_step_handler(msg, process_conta_step)
-            return
-        dados = mhi_config(conta)
-        config_mhi[chat_id] = dados
-        msg = bot.reply_to(message,
-                           'Desejas operar na\n  1 - Digital\n  2 - Binaria:')
-        bot.register_next_step_handler(msg, process_operacao_step)
-    except Exception as e:
-        bot.reply_to(message,
-                     '❌Upsi, ocorreu um erro, tente novamente /start❌')
-
+        try:
+            chat_id = message.chat.id
+            conta = message.text
+            if (not conta.isdigit()):
+                msg = bot.reply_to(
+                    message,
+                    '❌Opção inválida, escolha: \n1 para conta de Treinamento \n2 para Real'
+                )
+                bot.register_next_step_handler(msg, process_conta_step)
+                return
+            dados = mhi_config(conta)
+            config_mhi[chat_id] = dados
+            msg = bot.reply_to(message,
+                            'Desejas operar na\n  1 - Digital\n  2 - Binaria:')
+            bot.register_next_step_handler(msg, process_operacao_step)
+        except Exception as e:
+            bot.reply_to(message,
+                        '❌Upsi, ocorreu um erro, tente novamente /start❌')
 
 def process_operacao_step(message):
-    try:
-        chat_id = message.chat.id
-        operacao = message.text
-        if (not operacao.isdigit()):
+        try:
+            chat_id = message.chat.id
+            operacao = message.text
+            if (not operacao.isdigit()):
+                msg = bot.reply_to(
+                    message,
+                    '❌Opção inválida, escolha: \n1 para Digital \n2 para Binaria:')
+                bot.register_next_step_handler(msg, process_operacao_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.operacao = operacao
             msg = bot.reply_to(
                 message,
-                '❌Opção inválida, escolha: \n1 para Digital \n2 para Binaria:')
-            bot.register_next_step_handler(msg, process_operacao_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.operacao = operacao
-        msg = bot.reply_to(
-            message,
-            'Desejas operar a favor da\n  1 - Minoria\n  2 - Maioria:')
-        bot.register_next_step_handler(msg, process_tipo_mhi_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+                'Desejas operar a favor da\n  1 - Minoria\n  2 - Maioria:')
+            bot.register_next_step_handler(msg, process_tipo_mhi_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_tipo_mhi_step(message):
-    try:
-        chat_id = message.chat.id
-        tipo_mhi = message.text
-        if (not tipo_mhi.isdigit()):
+        try:
+            chat_id = message.chat.id
+            tipo_mhi = message.text
+            if (not tipo_mhi.isdigit()):
+                msg = bot.reply_to(
+                    message,
+                    '❌Opção inválida, escolha: \n1 para Minoria \n2 para Maioria:')
+                bot.register_next_step_handler(msg, process_tipo_mhi_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.tipo_mhi = tipo_mhi
             msg = bot.reply_to(
-                message,
-                '❌Opção inválida, escolha: \n1 para Minoria \n2 para Maioria:')
-            bot.register_next_step_handler(msg, process_tipo_mhi_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.tipo_mhi = tipo_mhi
-        msg = bot.reply_to(
-            message, 'Selecione o Time Frame\n' +
-            'Obs.: o Bot opera apenas em M1, M5 e M15\n' +
-            'Digite 1 para M1, 5 para M5 e 15 para M15')
-        bot.register_next_step_handler(msg, process_time_frame_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+                message, 'Selecione o Time Frame\n' +
+                'Obs.: o Bot opera apenas em M1, M5 e M15\n' +
+                'Digite 1 para M1, 5 para M5 e 15 para M15')
+            bot.register_next_step_handler(msg, process_time_frame_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_time_frame_step(message):
-    try:
-        chat_id = message.chat.id
-        time_frame = message.text
-        if not time_frame.isdigit():
+        try:
+            chat_id = message.chat.id
+            time_frame = message.text
+            if not time_frame.isdigit():
+                msg = bot.reply_to(
+                    message,
+                    '❌Opção inválida, escolha: \n1 para M1, 5 para M5 ou 15 para M15:'
+                )
+                bot.register_next_step_handler(msg, process_time_frame_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.time_frame = time_frame
             msg = bot.reply_to(
-                message,
-                '❌Opção inválida, escolha: \n1 para M1, 5 para M5 ou 15 para M15:'
-            )
-            bot.register_next_step_handler(msg, process_time_frame_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.time_frame = time_frame
-        msg = bot.reply_to(
-            message, 'Digite a paradidade por onde operar\n' +
-            'Lembre-se de selecionar apenas paridades abertas\n' +
-            'Ex.: EURUSD ou então EURUSD-OTC para mercado OTC:')
-        bot.register_next_step_handler(msg, process_par_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+                message, 'Digite a paradidade por onde operar\n' +
+                'Lembre-se de selecionar apenas paridades abertas\n' +
+                'Ex.: EURUSD ou então EURUSD-OTC para mercado OTC:')
+            bot.register_next_step_handler(msg, process_par_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_par_step(message):
-    try:
-        chat_id = message.chat.id
-        par = message.text
-        if par.isdigit() or par == '':
-            msg = bot.reply_to(
-                message,
-                '❌Opção inválida, escolha por Ex.: EURUSD ou EURUSD-OTC:')
-            bot.register_next_step_handler(msg, process_par_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.par = par
-        msg = bot.reply_to(message, 'Digite o valor de entrada')
-        bot.register_next_step_handler(msg, process_valor_entrada_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+        try:
+            chat_id = message.chat.id
+            par = message.text
+            if par.isdigit() or par == '':
+                msg = bot.reply_to(
+                    message,
+                    '❌Opção inválida, escolha por Ex.: EURUSD ou EURUSD-OTC:')
+                bot.register_next_step_handler(msg, process_par_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.par = par
+            msg = bot.reply_to(message, 'Digite o valor de entrada')
+            bot.register_next_step_handler(msg, process_valor_entrada_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_valor_entrada_step(message):
-    try:
-        chat_id = message.chat.id
-        valor_entrada = message.text
-        if float(valor_entrada) < 1:
-            msg = bot.reply_to(message,
-                               '❌O valor de entrada não pode ser menor que 1')
-            bot.register_next_step_handler(msg, process_valor_entrada_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.valor_entrada = valor_entrada
-        msg = bot.reply_to(
-            message, 'Indique a quantidade de Martingale\n' +
-            'Coloque 0 caso não queiras utilizá-lo\n' +
-            'Aconcelho indicar no máximo 2 níveis de Martingale')
-        bot.register_next_step_handler(msg, process_martingale_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+        try:
+            chat_id = message.chat.id
+            valor_entrada = message.text
+            if float(valor_entrada) < 1:
+                msg = bot.reply_to(message,
+                                '❌O valor de entrada não pode ser menor que 1')
+                bot.register_next_step_handler(msg, process_valor_entrada_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.valor_entrada = valor_entrada
+            msg = bot.reply_to(
+                message, 'Indique a quantidade de Martingale\n' +
+                'Coloque 0 caso não queiras utilizá-lo\n' +
+                'Aconcelho indicar no máximo 2 níveis de Martingale')
+            bot.register_next_step_handler(msg, process_martingale_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_martingale_step(message):
-    try:
-        chat_id = message.chat.id
-        martingale = message.text
-        if (not martingale.isdigit()):
-            msg = bot.reply_to(
-                message, '❌Opção inválida, digite apenas número inteiros')
-            bot.register_next_step_handler(msg, process_martingale_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.martingale = martingale
-        msg = bot.reply_to(message, 'Digite o valor do stop Loss')
-        bot.register_next_step_handler(msg, process_stop_loss_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+        try:
+            chat_id = message.chat.id
+            martingale = message.text
+            if (not martingale.isdigit()):
+                msg = bot.reply_to(
+                    message, '❌Opção inválida, digite apenas número inteiros')
+                bot.register_next_step_handler(msg, process_martingale_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.martingale = martingale
+            msg = bot.reply_to(message, 'Digite o valor do stop Loss')
+            bot.register_next_step_handler(msg, process_stop_loss_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_stop_loss_step(message):
-    try:
-        chat_id = message.chat.id
-        stop_loss = message.text
-        if float(stop_loss) < 1:
-            msg = bot.reply_to(
-                message,
-                '❌Opção inválida, digite apenas números e maior ou igual a 1')
-            bot.register_next_step_handler(msg, process_stop_loss_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.stop_loss = stop_loss
-        msg = bot.reply_to(message, 'Digite o valor do Stop Gain')
-        bot.register_next_step_handler(msg, process_stop_gain_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+        try:
+            chat_id = message.chat.id
+            stop_loss = message.text
+            if float(stop_loss) < 1:
+                msg = bot.reply_to(
+                    message,
+                    '❌Opção inválida, digite apenas números e maior ou igual a 1')
+                bot.register_next_step_handler(msg, process_stop_loss_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.stop_loss = stop_loss
+            msg = bot.reply_to(message, 'Digite o valor do Stop Gain')
+            bot.register_next_step_handler(msg, process_stop_gain_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_stop_gain_step(message):
-    try:
-        chat_id = message.chat.id
-        stop_gain = message.text
-        if float(stop_gain) < 1:
-            msg = bot.reply_to(
-                message, '❌Opção inválida, digite apenas número e maior que 0')
-            bot.register_next_step_handler(msg, process_time_frame_step)
-            return
-        dados = config_mhi[chat_id]
-        dados.stop_gain = stop_gain
-        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        markup.add('✅Guardar', 'Alterar')
-        msg = bot.reply_to(message,
-                           '✅Desejas guardar os dados?✅',
-                           reply_markup=markup)
-        bot.register_next_step_handler(msg, process_guardar_mhi_step)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-
+        try:
+            chat_id = message.chat.id
+            stop_gain = message.text
+            if float(stop_gain) < 1:
+                msg = bot.reply_to(
+                    message, '❌Opção inválida, digite apenas número e maior que 0')
+                bot.register_next_step_handler(msg, process_stop_gain_step)
+                return
+            dados = config_mhi[chat_id]
+            dados.stop_gain = stop_gain
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+            markup.add('✅Guardar', 'Alterar')
+            msg = bot.reply_to(message,
+                            '✅Desejas guardar os dados?✅',
+                            reply_markup=markup)
+            bot.register_next_step_handler(msg, process_guardar_mhi_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
 def process_guardar_mhi_step(message):
-    try:
-        chat_id = message.chat.id
-        salvar = message.text
-        dados = config_mhi[chat_id]
-        id_user = message.from_user.id
-        dados_cli = cliente_permitido(str(id_user))
-        if len(dados_cli) > 0:
-            for data in dados_cli:
-                id_telegram = int(data['id_telegram'])
-                estado = int(data['estado'])
-                plano = str(data['plano'])
-                mes_espiracao = int(data['mes_espiracao'])
-        if salvar == u'✅Guardar' and estado == 1:
+        try:
+            chat_id = message.chat.id
+            salvar = message.text
+            dados = config_mhi[chat_id]
+            if salvar == u'✅Guardar':
 
-            bot.send_message(
-                message.chat.id, '✅Dados inseridos com sucesso✅' +
-                '\nTipo de Conta: ' + str(dados.conta) + '\nOperar na: ' +
-                str(dados.operacao) + '\nTipo de MHI: ' + str(dados.tipo_mhi) +
-                '\nTime Frame: M' + str(dados.time_frame) + '\nParidade: ' +
-                str(dados.par) + '\nValor de entrada: ' +
-                str(dados.valor_entrada) + '\nNível de Martingale:' +
-                str(dados.martingale) + '\nStop Loss: ' +
-                str(dados.stop_loss) + '\nStop Gain: ' + str(dados.stop_gain))
+                bot.send_message(message.chat.id, '✅Dados inseridos com sucesso✅' +
+                    '\nTipo de Conta: '+('Real' if int(dados.conta)==2 else 'Treinamento')
+                    +'\nOperar na: '+('Digital' if int(dados.operacao)==1 else 'Binária') 
+                    +'\nTipo de MHI: '+ 'Minoria' if int(dados.tipo_mhi)==1 else 'Maioria' +
+                    '\nTime Frame: M' + str(dados.time_frame) + '\nParidade: ' +
+                    str(dados.par) + '\nValor de entrada: ' +
+                    str(dados.valor_entrada) + '\nNível de Martingale:' +
+                    str(dados.martingale) + '\nStop Loss: ' +
+                    str(dados.stop_loss) + '\nStop Gain: ' + str(dados.stop_gain))
 
-            bot_mhi(message)
+                bot_mhi(message)
 
-        elif salvar == u'Alterar' or estado == 0:
-            bot.register_next_step_handler(chat_id, process_conta_step)
-        else:
-            dados.conta = None
-            dados.operacao = None
-            dados.tipo_mhi = None
-            dados.time_frame == None
-            dados.par = None
-            dados.valor_entrada = None
-            dados.martingale = None
-            dados.stop_loss == None
-            dados.stop_gain = None
-            bot_mhi(message)
-    except Exception as e:
-        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+            elif salvar == u'Alterar':
+                bot.register_next_step_handler(chat_id, process_conta_step)
+            else:
+                dados.conta = None
+                dados.operacao = None
+                dados.tipo_mhi = None
+                dados.time_frame == None
+                dados.par = None
+                dados.valor_entrada = None
+                dados.martingale = None
+                dados.stop_loss == None
+                dados.stop_gain = None
+                bot_mhi(message)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
+@bot.message_handler(func=lambda message: message.text == '⚙Configurar Bot de Sinais')
+def config_da_lista_de_sinais(message):
+        msg = bot.reply_to(message,"Escolha em qual conta Operar:\n 1 - Treinamento\n 2 - REAL:")
+        bot.register_next_step_handler(msg, process_conta_sinais_step)
 
-'''
-       
-######################### CONEXÃO COM IQ OPTION ################################################################      
-API = IQ_Option("email@gmail.com","senha")
-API.connect()
+def process_conta_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            conta = message.text
+            if (not conta.isdigit()):
+                msg = bot.reply_to(message,'❌Opção inválida, escolha: \n1 para conta de Treinamento \n2 para Real')
+                bot.register_next_step_handler(msg, process_conta_sinais_step)
+                return
+            dados = lista_sinais_config(conta)
+            config_lista_sinais[chat_id] = dados
+            msg = bot.reply_to(message,'Desejas operar na\n  1 - Digital\n  2 - Binaria:')
+            bot.register_next_step_handler(msg, process_operacao_sinais_step)
+        except Exception as e:
+            bot.reply_to(message,
+                        '❌Upsi, ocorreu um erro, tente novamente /start❌')
 
-######################### CONEXÃO COM TELEBOT POR TOKEN ########################################################
+def process_operacao_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            operacao = message.text
+            if (not operacao.isdigit()):
+                msg = bot.reply_to(message,'❌Opção inválida, escolha: \n1 para Digital \n2 para Binaria:')
+                bot.register_next_step_handler(msg, process_operacao_sinais_step)
+                return
+            dados = config_lista_sinais[chat_id]
+            dados.operacao = operacao
+            msg = bot.reply_to(message,'Digite o valor de entrada')
+            bot.register_next_step_handler(msg, process_valor_entrada_sinais_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
+def process_valor_entrada_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            valor_entrada = message.text
+            if float(valor_entrada) < 1:
+                msg = bot.reply_to(message,'❌O valor de entrada não pode ser menor que 1')
+                bot.register_next_step_handler(msg, process_valor_entrada_sinais_step)
+                return
+            dados = config_lista_sinais[chat_id]
+            dados.valor_entrada = valor_entrada
+            msg = bot.reply_to(message, 'Indique a quantidade de Martingale\n' +
+                'Coloque 0 caso não queiras utilizá-lo\n' +
+                'Aconcelho indicar no máximo 2 níveis de Martingale')
+            bot.register_next_step_handler(msg, process_martingale_sinais_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-lista_sinais = []
+def process_martingale_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            martingale = message.text
+            if (not martingale.isdigit()):
+                msg = bot.reply_to(message, '❌Opção inválida, digite apenas número inteiros')
+                bot.register_next_step_handler(msg, process_martingale_sinais_step)
+                return
+            dados = config_lista_sinais[chat_id]
+            dados.martingale = martingale
+            msg = bot.reply_to(message, 'Digite o valor do stop Loss')
+            bot.register_next_step_handler(msg, process_stop_loss_sinais_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
+def process_stop_loss_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            stop_loss = message.text
+            if float(stop_loss) < 1:
+                msg = bot.reply_to(message,'❌Opção inválida, digite apenas números e maior ou igual a 1')
+                bot.register_next_step_handler(msg, process_stop_loss_sinais_step)
+                return
+            dados = config_lista_sinais[chat_id]
+            dados.stop_loss = stop_loss
+            msg = bot.reply_to(message, 'Digite o valor do Stop Gain')
+            bot.register_next_step_handler(msg, process_stop_gain_sinais_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-@bot.message_handler(commands=['add'])
-def add_sinal(session):
-    msg = str(session.text).split()
-    position = len(lista_sinais)+1
-    horario = msg[1]
-    par = msg[2]
-    entrada = msg[3]
-    direcao = msg[4]
-    tempo = msg[5]
-    lista_sinais.append((position, horario, par, entrada, direcao, tempo))
-    bot.send_message(session.chat.id, str('##### Sinal Adicionado #####\nPosição: '+str(position)+'\nHorário: '+horario+'\nParidade: '+par+'\nValor de entrada: '+entrada+'\nDireção: '+direcao+'\nExpiração: '+tempo+' minutos\n#######################'))
+def process_stop_gain_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            stop_gain = message.text
+            if float(stop_gain) < 1:
+                msg = bot.reply_to(message,'❌Opção inválida, digite apenas número e maior que 0')
+                bot.register_next_step_handler(msg, process_stop_gain_sinais_step)
+                return
+            dados = config_lista_sinais[chat_id]
+            dados.stop_gain = stop_gain
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+            markup.add('✅Guardar', 'Alterar')
+            msg = bot.reply_to(message,'✅Desejas guardar os dados?✅',reply_markup=markup)
+            bot.register_next_step_handler(msg, process_guardar_sinais_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-######################### LISTAR SINAIS ########################################################################
-@bot.message_handler(commands=['listar'])
-def listar_sinais(session):
-    bot.send_message(session.chat.id, str('##### Listando Sinais ('+str(len(lista_sinais))+') #####'))
-    for sinal in lista_sinais:
-        bot.send_message(session.chat.id, str('Posição: '+str(sinal[0])+'\nHorário: '+sinal[1]+'\nParidade: '+sinal[2]+'\nValor de entrada: '+sinal[3]+'\nDireção: '+sinal[4]+'\nExpiração: '+sinal[5]+' minutos'))
+def process_guardar_sinais_step(message):
+        try:
+            chat_id = message.chat.id
+            salvar = message.text
+            dados = config_lista_sinais[chat_id]
+            if salvar == u'✅Guardar':
 
+                bot.send_message(message.chat.id, '✅Dados inseridos com sucesso✅' +
+                    '\nTipo de Conta: '+('Real' if int(dados.conta)==2 else 'Treinamento')
+                    +'\nOperar na: '+('Digital' if int(dados.operacao)==1 else 'Binária')
+                    +'\nValor de entrada: '+str(dados.valor_entrada) + 
+                    '\nNível de Martingale:' +str(dados.martingale) + '\nStop Loss: ' +
+                    str(dados.stop_loss) + '\nStop Gain: ' + str(dados.stop_gain))
 
-######################### REMOVER SINAL #######################################################################
-@bot.message_handler(commands=['remover'])
-def remover_sinal(session):
-    msg = str(session.text).split()
-    position = msg[1]
-    for sinal in lista_sinais:
-        if int(sinal[0]) == int(position):
-            lista_sinais.remove(sinal)          
-            bot.reply_to(session, str('Sinal da posição : '+position+' removido com sucesso. '))
+                bot_lista_sinais(message)
+
+            elif salvar == u'Alterar':
+                bot.register_next_step_handler(chat_id, process_conta_sinais_step)
+            else:
+                dados.conta = None
+                dados.operacao = None
+                dados.valor_entrada = None
+                dados.martingale = None
+                dados.stop_loss == None
+                dados.stop_gain = None
+                bot_lista_sinais(message)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
             
-
-######################### Operando Sinais #####################################################################
-
-@bot.message_handler(commands=['operar'])
-def operar_lista(session):
-    while len(lista_sinais) > 0:                
-        for sinal in lista_sinais:
-            minutos = str(datetime.now().strftime('%H:%M'))
-            if str(sinal[1]) == minutos:
-                status, id = API.buy_digital_spot(str(sinal[2]), int(sinal[3]), str(sinal[4]), int(sinal[5]))
-                if status:
-                    while True:                    
-                        resultado, valor = API.check_win_digital_v2(id)
-                        if resultado:
-                            if valor > 0:
-                                bot.send_message(session.chat.id, str('###### Resultado: Win ######\nDados Op:'+sinal[2]+' | '+str(sinal[3])+',00 | '+sinal[4]+' | '+str(sinal[5])+' min\nLucro: '+str(round(valor,2))+'\n####################'))                                                                
-                                lista_sinais.remove(sinal)
-                                bot.send_message(session.chat.id, str('Sinal da posição : '+str(sinal[0])+' removido. '))
-                                break
-                            elif valor < 0:
-                                bot.send_message(session.chat.id, str('###### Resultado: Loss ######\nDados Op:'+sinal[2]+' | '+str(sinal[3])+',00 | '+sinal[4]+' | '+str(sinal[5])+' min\nLucro: '+str(round(valor,2))+'\n####################'))                                                                
-                                lista_sinais.remove(sinal)
-                                bot.send_message(session.chat.id, str('Sinal da posição : '+str(sinal[0])+' removido. '))
-                                break
-                            else:
-                                bot.send_message(session.chat.id, str('###### Resultado: Error na operação ######\nDados Op:'+sinal[2]+' | '+str(sinal[3])+',00 | '+sinal[4]+' | '+str(sinal[5])+' min\nLucro: Error \n####################'))                                                                
-                                lista_sinais.remove(sinal)
-                                bot.send_message(session.chat.id, str('Sinal da posição : '+str(sinal[0])+' removido. '))                                
-                                break    
-
-'''
-
 time.sleep(1)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
-
