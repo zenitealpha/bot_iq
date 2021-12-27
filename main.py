@@ -1,13 +1,13 @@
-import sys, os, getpass
-import telebot, time, json
+import sys, os, getpass, logging, configparser, base64, requests, telebot, time, json
 from iqoptionapi.stable_api import IQ_Option
 from datetime import datetime, timezone
 from telebot import types, util
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import base64
 from github import Github
-import requests
 from pprint import pprint
+from datetime import datetime, timedelta
+from colorama import init, Fore, Back
+from time import time
 
 api_bot = "2118641728:AAG5uHqiYHEh3WRYc-gOtHSLOvAmGY4sh7U"
 bot = telebot.TeleBot(api_bot)
@@ -45,6 +45,14 @@ class lista_sinais_config:
         self.martingale = None
         self.stop_loss = None
         self.stop_gain = None
+
+config_catalogador = {}
+class catalogador_config:
+    def __init__(self, time_frame):
+        self.time_frame = time_frame
+        self.dias = None
+        self.porcentagem = None
+        self.martingale = None
 
 global ligado
 global ligado_sinais
@@ -253,9 +261,7 @@ def listar_bots(message):
         markup.row(itembtnc, itembtnd, itembtne)
         markup.row(itembtng, itembtnf, itembtni)
         markup.row(itembtnh)
-        bot.send_message(message.chat.id,
-                         "====Bots Disponíveis====",
-                         reply_markup=markup)
+        bot.send_message(message.chat.id,"====Bots Disponíveis====",reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text == 'Lista de Sinais')
 def bot_lista_sinais(message):
@@ -547,9 +553,7 @@ def bot_mhi(message):
 
         while True:
             try:
-                operacao = int(
-                    dados_config_mhi.operacao
-                )  #int(input('\n Deseja operar na\n  1 - Digital\n  2 - Binaria\n  :: '))
+                operacao = int(dados_config_mhi.operacao)
 
                 if operacao > 0 and operacao < 3: break
             except:
@@ -737,17 +741,149 @@ def bot_estrategia_berman(message):
     bot.send_message(message.chat.id,"Bot de Estratégia Berman",reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text == 'Catalogador de Sinais')
-async def bot_catalogador(message):
+def bot_catalogador(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
-    itembtna = types.KeyboardButton('✅Ligar')
-    itembtnb = types.KeyboardButton('Desligar')
-    itembtnc = types.KeyboardButton('Configurações')
+    itembtna = types.KeyboardButton('✅Ligar Catalogador')
+    itembtnc = types.KeyboardButton('⚙Configurar Bot Catalogador')
     itembtnd = types.KeyboardButton('Ajuda')
     itembtne = types.KeyboardButton('🤖Listar Bots')
-    markup.row(itembtna, itembtnb)
+    markup.row(itembtna)
     markup.row(itembtnc)
     markup.row(itembtnd, itembtne)
     bot.send_message(message.chat.id,"Catalogação de Sinais",reply_markup=markup)
+
+    @bot.message_handler(func=lambda message: message.text == '✅Ligar Catalogador')
+    def ligar_catalogador(message):
+        chat_id = message.chat.id
+        dados_config_cat = config_catalogador[chat_id]
+        dados_config_login = login_dict[chat_id]
+        init(autoreset=True)
+        usuario = dados_config_login.email  # input("Digite o usuário da IQ Option: ")
+        senha = dados_config_login.senha  #getpass.getpass(f"Digite a senha da IQ Option: ")
+        API = IQ_Option(usuario, senha)
+        print(API.connect())
+
+        if API.check_connect():
+            bot.send_message(message.chat.id, '✅Conectado com sucesso!✅')
+        else:
+            bot.send_message(message.chat.id, '🚨Erro ao se conectar🚨')
+            return
+
+        def cataloga(par, dias, prct_call, prct_put, timeframe):
+            data = []
+            datas_testadas = []
+            time_ = time()
+            sair = False
+            while sair == False:
+                velas = API.get_candles(par, (timeframe * 60), 1000, time_)
+                velas.reverse()
+                
+                for x in velas:	
+                    if datetime.fromtimestamp(x['from']).strftime('%Y-%m-%d') not in datas_testadas: 
+                        datas_testadas.append(datetime.fromtimestamp(x['from']).strftime('%Y-%m-%d'))
+                        
+                    if len(datas_testadas) <= dias:
+                        x.update({'cor': 'verde' if x['open'] < x['close'] else 'vermelha' if x['open'] > x['close'] else 'doji'})
+                        data.append(x)
+                    else:
+                        sair = True
+                        break
+                        
+                time_ = int(velas[-1]['from'] - 1)
+
+            analise = {}
+            for velas in data:
+                horario = datetime.fromtimestamp(velas['from']).strftime('%H:%M')
+                if horario not in analise : analise.update({horario: {'verde': 0, 'vermelha': 0, 'doji': 0, '%': 0, 'dir': ''}})	
+                analise[horario][velas['cor']] += 1
+                
+                try:
+                    analise[horario]['%'] = round(100 * (analise[horario]['verde'] / (analise[horario]['verde'] + analise[horario]['vermelha'] + analise[horario]['doji'])))
+                except:
+                    pass
+            
+            for horario in analise:
+                if analise[horario]['%'] > 50 : analise[horario]['dir'] = 'CALL'
+                if analise[horario]['%'] < 50 : analise[horario]['%'],analise[horario]['dir'] = 100 - analise[horario]['%'],'PUT '
+            
+            return analise
+
+        timeframe = int(dados_config_cat.time_frame)
+
+        dias = int(dados_config_cat.dias)
+
+        porcentagem = int(dados_config_cat.porcentagem)
+
+        martingale = int(dados_config_cat.martingale)
+
+        prct_call = abs(porcentagem)
+        prct_put = abs(100 - porcentagem)
+
+        P = API.get_all_open_time()
+
+        catalogacao = {}
+        for par in P['digital']:
+            if P['digital'][par]['open'] == True:
+                timer = int(time())
+                resposta= ('*' + ' CATALOGANDO - ' + par + '.. ')
+                bot.send_message(message.chat.id,resposta)
+                catalogacao.update({par: cataloga(par, dias, prct_call, prct_put, timeframe)})	
+
+                for par in catalogacao:
+                    for horario in sorted(catalogacao[par]):
+                        if martingale.strip() != '':					
+                        
+                            mg_time = horario
+                            soma = {'verde': catalogacao[par][horario]['verde'], 'vermelha': catalogacao[par][horario]['vermelha'], 'doji': catalogacao[par][horario]['doji']}
+                            
+                            for i in range(int(martingale)):
+
+                                catalogacao[par][horario].update({'mg'+str(i+1): {'verde': 0, 'vermelha': 0, 'doji': 0, '%': 0} })
+
+                                mg_time = str(datetime.strptime((datetime.now()).strftime('%Y-%m-%d ') + str(mg_time), '%Y-%m-%d %H:%M') + timedelta(minutes=timeframe))[11:-3]
+                                
+                                if mg_time in catalogacao[par]:
+                                    catalogacao[par][horario]['mg'+str(i+1)]['verde'] += catalogacao[par][mg_time]['verde'] + soma['verde']
+                                    catalogacao[par][horario]['mg'+str(i+1)]['vermelha'] += catalogacao[par][mg_time]['vermelha'] + soma['vermelha']
+                                    catalogacao[par][horario]['mg'+str(i+1)]['doji'] += catalogacao[par][mg_time]['doji'] + soma['doji']
+                                    
+                                    catalogacao[par][horario]['mg'+str(i+1)]['%'] = round(100 * (catalogacao[par][horario]['mg'+str(i+1)]['verde' if catalogacao[par][horario]['dir'] == 'CALL' else 'vermelha'] / (catalogacao[par][horario]['mg'+str(i+1)]['verde'] + catalogacao[par][horario]['mg'+str(i+1)]['vermelha'] + catalogacao[par][horario]['mg'+str(i+1)]['doji']) ) )
+                                    
+                                    soma['verde'] += catalogacao[par][mg_time]['verde']
+                                    soma['vermelha'] += catalogacao[par][mg_time]['vermelha']
+                                    soma['doji'] += catalogacao[par][mg_time]['doji']
+                                else:						
+                                    catalogacao[par][horario]['mg'+str(i+1)]['%'] = 'N/A'
+                
+                msg1='Terminou em ' + str(int(time()) - timer) + ' segundos'
+                bot.send_message(message.chat.id,msg1)
+
+        for par in catalogacao:
+            for horario in sorted(catalogacao[par]):
+                ok = False		
+                
+                if catalogacao[par][horario]['%'] >= porcentagem:
+                    ok = True
+                else:
+                    for i in range(int(martingale)):
+                        if catalogacao[par][horario]['mg'+str(i+1)]['%'] >= porcentagem:
+                            ok = True
+                            break
+                
+                if ok == True:
+                
+                    msg = Fore.YELLOW + par + Fore.RESET + ' - ' + horario + ' - ' + (Fore.RED if catalogacao[par][horario]['dir'] == 'PUT ' else Fore.GREEN) + catalogacao[par][horario]['dir'] + Fore.RESET + ' - ' + str(catalogacao[par][horario]['%']) + '% - ' + Back.GREEN + Fore.BLACK + str(catalogacao[par][horario]['verde']) + Back.RED + Fore.BLACK + str(catalogacao[par][horario]['vermelha']) + Back.RESET + Fore.RESET + str(catalogacao[par][horario]['doji'])
+                    
+                    if martingale.strip() != '':
+                        for i in range(int(martingale)):
+                            if str(catalogacao[par][horario]['mg'+str(i+1)]['%']) != 'N/A':
+                                msg += ' | MG ' + str(i+1) + ' - ' + str(catalogacao[par][horario]['mg'+str(i+1)]['%']) + '% - ' + Back.GREEN + Fore.BLACK + str(catalogacao[par][horario]['mg'+str(i+1)]['verde']) + Back.RED + Fore.BLACK + str(catalogacao[par][horario]['mg'+str(i+1)]['vermelha']) + Back.RESET + Fore.RESET + str(catalogacao[par][horario]['mg'+str(i+1)]['doji'])
+                            else:
+                                msg += ' | MG ' + str(i+1) + ' - N/A - N/A' 
+                                
+                    bot.send_message(message.chat.id,msg)	
+                    open('sinais_' + str((datetime.now()).strftime('%Y-%m-%d')) + '_' + str(timeframe) + 'M.txt', 'a').write(horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip() + '\n')
+
 
 @bot.message_handler(func=lambda message: message.text == 'Indicadores Técnicos')
 def bot_indicadores_tecnicos(message):
@@ -1109,7 +1245,8 @@ def process_guardar_mhi_step(message):
                 bot_mhi(message)
 
             elif salvar == u'Alterar':
-                bot.register_next_step_handler(chat_id, process_conta_step)
+                msg = 'Escolha em qual conta Operar:\n 1 - Treinamento\n 2 - REAL:'
+                bot.register_next_step_handler(msg, process_conta_step)
             else:
                 dados.conta = None
                 dados.operacao = None
@@ -1241,7 +1378,8 @@ def process_guardar_sinais_step(message):
                 bot_lista_sinais(message)
 
             elif salvar == u'Alterar':
-                bot.register_next_step_handler(chat_id, process_conta_sinais_step)
+                msg='Escolha em qual conta Operar:\n 1 - Treinamento\n 2 - REAL:'
+                bot.register_next_step_handler(msg, process_conta_sinais_step)
             else:
                 dados.conta = None
                 dados.operacao = None
@@ -1252,7 +1390,99 @@ def process_guardar_sinais_step(message):
                 bot_lista_sinais(message)
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
-            
+
+@bot.message_handler(func=lambda message: message.text == '⚙Configurar Bot Catalogador')
+def config_do_catalogador(message):
+        msg = bot.reply_to(message,"Indique o Time Frame a analizar:")
+        bot.register_next_step_handler(msg, process_time_frame_cat_step)
+
+def process_time_frame_cat_step(message):
+        try:
+            chat_id = message.chat.id
+            time_frame = message.text
+            if (not time_frame.isdigit()):
+                msg = bot.reply_to(message,'❌Opção inválida, digite apenas número:')
+                bot.register_next_step_handler(msg, process_time_frame_cat_step)
+                return
+            dados = catalogador_config(time_frame)
+            config_catalogador[chat_id] = dados
+            msg = bot.reply_to(message, 'Quantos dias pretendes analizar?')
+            bot.register_next_step_handler(msg, process_dias_cat_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
+def process_dias_cat_step(message):
+        try:
+            chat_id = message.chat.id
+            dias = message.text
+            if (not dias.isdigit()):
+                msg = bot.reply_to(message,'❌Opção inválida digite apenas números')
+                bot.register_next_step_handler(msg, process_dias_cat_step)
+                return
+            dados = config_catalogador[chat_id]
+            dados.dias = dias
+            msg = bot.reply_to(message,'Qual a percentagem mínima?')
+            bot.register_next_step_handler(msg, process_percent_cat_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
+def process_percent_cat_step(message):
+        try:
+            chat_id = message.chat.id
+            porcentagem = message.text
+            if (not porcentagem.isdigit()):
+                msg = bot.reply_to(message,'❌Opção inválida, digite apenas número!')
+                bot.register_next_step_handler(msg, process_valor_entrada_step)
+                return
+            dados = config_catalogador[chat_id]
+            dados.porcentagem = porcentagem
+            msg = bot.reply_to(message,'Digite a quantidade de Martingale:')
+            bot.register_next_step_handler(msg, process_martingale_cat_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
+def process_martingale_cat_step(message):
+        try:
+            chat_id = message.chat.id
+            martingale = message.text
+            if (not martingale.isdigit()):
+                msg = bot.reply_to(message, '❌Opção inválida, digite apenas números.')
+                bot.register_next_step_handler(msg, process_martingale_step)
+                return
+            dados = config_catalogador[chat_id]
+            dados.martingale = martingale
+            msg = bot.reply_to(message, 'Digite o valor do stop Loss')
+            bot.register_next_step_handler(msg, process_guardar_cat_step)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
+def process_guardar_cat_step(message):
+    try:
+        chat_id = message.chat.id
+        salvar = message.text
+        dados = config_catalogador[chat_id]
+        if salvar == u'✅Guardar':
+
+            bot.send_message(message.chat.id, '✅Dados inseridos com sucesso✅' +
+                '\nTime Frame: M'+str(dados.time_frame)+
+                '\nQuantidade de dias: '+str(dados.dias)+
+                '\nPorcentagem: '+str(dados.porcentagem)+
+                '\nNível de Martingale:'+str(dados.martingale))
+
+            bot_mhi(message)
+
+        elif salvar == u'Alterar':
+            msg = 'Indique o time frame a analizar:'
+            bot.register_next_step_handler(msg, process_time_frame_cat_step)
+        else:
+            dados.time_frame = None
+            dados.dias = None
+            dados.porcentagem = None
+            dados.martingale = None
+            bot_mhi(message)
+    except Exception as e:
+        bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
