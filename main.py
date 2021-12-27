@@ -1431,7 +1431,7 @@ def process_percent_cat_step(message):
             porcentagem = message.text
             if (not porcentagem.isdigit()):
                 msg = bot.reply_to(message,'❌Opção inválida, digite apenas número!')
-                bot.register_next_step_handler(msg, process_valor_entrada_step)
+                bot.register_next_step_handler(msg, process_percent_cat_step)
                 return
             dados = config_catalogador[chat_id]
             dados.porcentagem = porcentagem
@@ -1446,11 +1446,13 @@ def process_martingale_cat_step(message):
             martingale = message.text
             if (not martingale.isdigit()):
                 msg = bot.reply_to(message, '❌Opção inválida, digite apenas números.')
-                bot.register_next_step_handler(msg, process_martingale_step)
+                bot.register_next_step_handler(msg, process_martingale_cat_step)
                 return
             dados = config_catalogador[chat_id]
             dados.martingale = martingale
-            msg = bot.reply_to(message, 'Digite o valor do stop Loss')
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+            markup.add('✅Guardar', 'Cancelar')
+            msg = bot.reply_to(message,'✅Desejas guardar os dados?✅',reply_markup=markup)
             bot.register_next_step_handler(msg, process_guardar_cat_step)
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
@@ -1468,21 +1470,17 @@ def process_guardar_cat_step(message):
                 '\nPorcentagem: '+str(dados.porcentagem)+
                 '\nNível de Martingale:'+str(dados.martingale))
 
-            bot_mhi(message)
-
-        elif salvar == u'Alterar':
-            msg = 'Indique o time frame a analizar:'
-            bot.register_next_step_handler(msg, process_time_frame_cat_step)
+            bot_catalogador(message)
         else:
             dados.time_frame = None
             dados.dias = None
             dados.porcentagem = None
             dados.martingale = None
-            bot_mhi(message)
+            bot_catalogador(message)
     except Exception as e:
         bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-time.sleep(1)
+time.sleep(2)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
