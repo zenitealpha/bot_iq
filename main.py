@@ -1,4 +1,5 @@
 import sys, os, getpass, logging, configparser, base64, requests, telebot, time, json
+from time import time
 from iqoptionapi.stable_api import IQ_Option
 from datetime import datetime, timezone
 from telebot import types, util
@@ -813,19 +814,16 @@ def bot_catalogador(message):
 
         porcentagem = int(dados_config_cat.porcentagem)
 
-        martingale = int(dados_config_cat.martingale)
+        martingale = dados_config_cat.martingale
 
         prct_call = abs(porcentagem)
         prct_put = abs(100 - porcentagem)
 
         P = API.get_all_open_time()
-
+        bot.send_message(message.chat.id,'Catalogando, por favor aguarde...')
         catalogacao = {}
         for par in P['digital']:
             if P['digital'][par]['open'] == True:
-                timer = int(time())
-                resposta= ('*' + ' CATALOGANDO - ' + par + '.. ')
-                bot.send_message(message.chat.id,resposta)
                 catalogacao.update({par: cataloga(par, dias, prct_call, prct_put, timeframe)})	
 
                 for par in catalogacao:
@@ -854,9 +852,6 @@ def bot_catalogador(message):
                                 else:						
                                     catalogacao[par][horario]['mg'+str(i+1)]['%'] = 'N/A'
                 
-                msg1='Terminou em ' + str(int(time()) - timer) + ' segundos'
-                bot.send_message(message.chat.id,msg1)
-
         for par in catalogacao:
             for horario in sorted(catalogacao[par]):
                 ok = False		
@@ -871,12 +866,12 @@ def bot_catalogador(message):
                 
                 if ok == True:
                 
-                    msg = Fore.YELLOW + par + Fore.RESET + ' - ' + horario + ' - ' + (Fore.RED if catalogacao[par][horario]['dir'] == 'PUT ' else Fore.GREEN) + catalogacao[par][horario]['dir'] + Fore.RESET + ' - ' + str(catalogacao[par][horario]['%']) + '% - ' + Back.GREEN + Fore.BLACK + str(catalogacao[par][horario]['verde']) + Back.RED + Fore.BLACK + str(catalogacao[par][horario]['vermelha']) + Back.RESET + Fore.RESET + str(catalogacao[par][horario]['doji'])
+                    msg = par+' - '+horario+' - '+('🔴' if catalogacao[par][horario]['dir'] == 'PUT ' else '✅') + catalogacao[par][horario]['dir'] + ' - ' + str(catalogacao[par][horario]['%']) + '%'
                     
                     if martingale.strip() != '':
                         for i in range(int(martingale)):
                             if str(catalogacao[par][horario]['mg'+str(i+1)]['%']) != 'N/A':
-                                msg += ' | MG ' + str(i+1) + ' - ' + str(catalogacao[par][horario]['mg'+str(i+1)]['%']) + '% - ' + Back.GREEN + Fore.BLACK + str(catalogacao[par][horario]['mg'+str(i+1)]['verde']) + Back.RED + Fore.BLACK + str(catalogacao[par][horario]['mg'+str(i+1)]['vermelha']) + Back.RESET + Fore.RESET + str(catalogacao[par][horario]['mg'+str(i+1)]['doji'])
+                                msg += ' | MG ' + str(i+1) + ' - ' + str(catalogacao[par][horario]['mg'+str(i+1)]['%']) + '%'
                             else:
                                 msg += ' | MG ' + str(i+1) + ' - N/A - N/A' 
                                 
@@ -1480,7 +1475,6 @@ def process_guardar_cat_step(message):
     except Exception as e:
         bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-time.sleep(2)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.infinity_polling(allowed_updates=util.update_types)
