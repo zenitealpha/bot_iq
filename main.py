@@ -112,7 +112,7 @@ def send_welcome(message):
             file.close()
         '''
         
-    elif message.chat.type == 'private' and id_telegram != id_user:
+    elif message.chat.type == 'private' and (id_user!=id_telegram):
         #message obtem os dados do usuário: id, nomes, data da sms, e o testo ou conteúdo enviado
         #a linha abaixo recupera o id, primeiro nome, e o último nome e enviar uma sms ao usuário de boas vindas
         bot.send_message(message.chat.id, "Olá tudo bem " + message.from_user.first_name +
