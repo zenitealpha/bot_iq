@@ -874,10 +874,12 @@ def bot_catalogador(message):
                             else:
                                 msg += ' | MG ' + str(i+1) + ' - N/A' 
                                 
-                    bot.send_message(message.chat.id,msg)	
-                    open('sinais_' + str((datetime.now()).strftime('%Y-%m-%d')) + '_' + str(timeframe) + 'M.txt', 'a').write(horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip() + '\n')
-
-
+                    hora_cat = horario.split(':')
+                    hora_atual=datetime.now().strftime('%H:%M').split(':')
+                    if int(hora_cat[0])>=int(hora_atual[0]):
+                        rs = horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip()
+                        bot.send_message(message.chat.id,rs)            
+               
 @bot.message_handler(func=lambda message: message.text == 'Indicadores Técnicos')
 def bot_indicadores_tecnicos(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
