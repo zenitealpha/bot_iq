@@ -8,11 +8,11 @@ from datetime import datetime, timedelta
 from colorama import init
 import pytz
 
-#api_bot = "2118641728:AAG5uHqiYHEh3WRYc-gOtHSLOvAmGY4sh7U"
-api_bot="5060827840:AAHoiNIuNlr8q3eHvhL2ADZSC6OvV_RY9II"
+api_bot = "2118641728:AAG5uHqiYHEh3WRYc-gOtHSLOvAmGY4sh7U"
+#api_bot="5060827840:AAHoiNIuNlr8q3eHvhL2ADZSC6OvV_RY9II"
 bot = telebot.TeleBot(api_bot)
 g = Github(login_or_token="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")
-repo = g.get_user().get_repo('autoIQ')
+repo = g.get_user().get_repo('bot_iq')
 all_files = []
 contents = repo.get_contents("")
 content = str(contents)
