@@ -319,9 +319,7 @@ def bot_lista_sinais(message):
                 if d != False:
                     d = round(int(d) / 100, 2)
                     break
-
             API.unsubscribe_strike_list(par, 1)
-
             return d
 
         if (dados_config_login.email == None) or (dados_config_login.senha == None):
@@ -483,7 +481,7 @@ def bot_mhi(message):
     bot.send_message(message.chat.id, "Bot de MHI", reply_markup=markup)
     
     @bot.message_handler(func=lambda message: message.text == '✅Ligar Bot de MHI')
-    def ligar(message):
+    def ligar_mhi(message):
         global ligado
         ligado = True
         bot.send_message(message.chat.id, "✅Bot de MHI ligado✅")
@@ -517,7 +515,6 @@ def bot_mhi(message):
                 if d != False:
                     d = round(int(d) / 100, 2)
                     break
-                time.sleep(1)
             API.unsubscribe_strike_list(par, 1)
 
             return d
@@ -1098,7 +1095,7 @@ def process_add_lista_step(message):
                 git_file ='{}.txt'.format(message.chat.id)
                 if git_file in content:
                     contents = repo.get_contents("{}.txt".format(message.chat.id))
-                    repo.delete_file(contents.path, "remove {}.txt".format(message.chat.id), contents.sha)
+                    #repo.delete_file(contents.path, "remove {}.txt".format(message.chat.id), contents.sha)
                     repo.create_file(git_file, "committing files", lista)
                 else:
                     repo.create_file(git_file, "committing files", lista)
