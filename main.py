@@ -8,6 +8,7 @@ from github import Github
 from pprint import pprint
 from datetime import datetime, timedelta
 from colorama import init, Fore, Back
+import pytz
 
 api_bot = "2118641728:AAG5uHqiYHEh3WRYc-gOtHSLOvAmGY4sh7U"
 bot = telebot.TeleBot(api_bot)
@@ -319,7 +320,7 @@ def bot_lista_sinais(message):
                 if d != False:
                     d = round(int(d) / 100, 2)
                     break
-                time.sleep(1)
+
             API.unsubscribe_strike_list(par, 1)
 
             return d
@@ -371,8 +372,14 @@ def bot_lista_sinais(message):
                 if len(sinal) > 0 and sinal != '':
                     sinal_ = sinal.split(',')
                     #formato da lista: TIMESTAMP,PARIDADE,call,1
-                    if sinal_[0] == datetime.now().strftime('%H:%M'):
-
+                    utcmoment_naive = datetime.utcnow()
+                    utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
+                    localFormat = "%H:%M"
+                    timezones = ['America/Sao_Paulo']
+                    for tz in timezones:
+                        localDatetime = utcmoment.astimezone(pytz.timezone(tz))
+                        
+                    if str(sinal_[0]) == str(localDatetime.strftime(localFormat)):
                             sinais.append({'timestamp': sinal_[0],
                                             'par': sinal_[1],
                                             'dir': sinal_[2],
@@ -434,7 +441,7 @@ def bot_lista_sinais(message):
                                 RESULTADO: ''' + ('✅WIN' if valor > 0 else '🚨LOSS') + '''
                                 LUCRO: 💲''' + str(round(valor, 2)) + '''\n
                                 ''' + (str(i)+ ' ♻GALE' if i > 0 else '') + '''\n'''
-                                        bot.send_message(message.chat.id,msg)
+                                        bot.send_message(message.chat.id,str(msg))
                                     
                                         valor_entrada = Martingale(valor_entrada, payout)
                                         if lucro <= float('-' +str(abs(stop_loss))):
@@ -454,7 +461,7 @@ def bot_lista_sinais(message):
                                 break
                 print(ops+1, 'Operações abertas |', datetime.now().strftime('%H:%M:%S'), end='\r')
         except Exception as e:
-                        print("O Bot encontrou o erro abaixo:\n",e+'')
+                        print("O Bot encontrou o erro abaixo:\n",e)
 
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Bot de Sinais')
     def desligar_lista(message):
@@ -637,9 +644,7 @@ def bot_mhi(message):
                     for i in range(martingale):
 
                         status, id = API.buy_digital_spot(
-                            par, valor_entrada, dir,
-                            time_frame) if operacao == 1 else API.buy(
-                                valor_entrada, par, dir, time_frame)
+                        par, valor_entrada, dir,time_frame) if operacao == 1 else API.buy(valor_entrada, par, dir, time_frame)
 
                         if status:
                             while True:
@@ -653,8 +658,7 @@ def bot_mhi(message):
                                     valor = 0
 
                                 if status:
-                                    valor = valor if valor > 0 else float(
-                                        '-' + str(abs(valor_entrada)))
+                                    valor = valor if valor > 0 else float('-' + str(abs(valor_entrada)))
                                     lucro += round(valor, 2)
 
                                     msg = '''
@@ -817,7 +821,6 @@ def bot_catalogador(message):
 
         prct_call = abs(porcentagem)
         prct_put = abs(100 - porcentagem)
-
         P = API.get_all_open_time()
         bot.send_message(message.chat.id,'Catalogando, por favor aguarde...')
         catalogacao = {}
@@ -873,13 +876,15 @@ def bot_catalogador(message):
                                 msg += ' | MG ' + str(i+1) + ' - ' + str(catalogacao[par][horario]['mg'+str(i+1)]['%']) + '%'
                             else:
                                 msg += ' | MG ' + str(i+1) + ' - N/A' 
-                                
+
+                    open('sinais_' + str((datetime.now()).strftime('%Y-%m-%d')) + '_' + str(timeframe) + 'M.txt', 'a').write(horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip() + '\n')
+
                     hora_cat = horario.split(':')
                     hora_atual=datetime.now().strftime('%H:%M').split(':')
                     if int(hora_cat[0])>=int(hora_atual[0]):
                         rs = horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip()
-                        bot.send_message(message.chat.id,rs)            
-               
+                        bot.send_message(message.chat.id,rs)
+
 @bot.message_handler(func=lambda message: message.text == 'Indicadores Técnicos')
 def bot_indicadores_tecnicos(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
