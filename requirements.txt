@@ -6,3 +6,4 @@ pytz-deprecation-shim==0.1.0.post0
 pyupgrade==2.19.1
 urllib3==1.24.3
 websocket-client==0.56.0
+PyGithub==1.55
