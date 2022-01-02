@@ -1045,7 +1045,7 @@ def process_add_lista_step(message):
                     repo.create_file(git_file, "committing files", lista)
             else:
                 bot.reply_to(message, 'Envie pelo menos um sinal')
-
+            time.sleep(3)
             bot_lista_sinais(message)
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
@@ -1279,7 +1279,8 @@ def process_conta_sinais_step(message):
             msg = bot.reply_to(message,'Desejas operar na\n  1 - Digital\n  2 - Binaria:')
             bot.register_next_step_handler(msg, process_operacao_sinais_step)
         except Exception as e:
-            bot.reply_to(message,'❌Upsi, ocorreu um erro, tente novamente /start❌')
+            bot.reply_to(message,
+                        '❌Upsi, ocorreu um erro, tente novamente /start❌')
 
 def process_operacao_sinais_step(message):
         try:
@@ -1353,7 +1354,6 @@ def process_stop_gain_sinais_step(message):
                 return
             dados = config_lista_sinais[chat_id]
             dados.stop_gain = stop_gain
-            time.sleep(3)
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
             markup.add('✅Guardar', 'Alterar')
             msg = bot.reply_to(message,'✅Desejas guardar os dados?✅',reply_markup=markup)
