@@ -1101,8 +1101,7 @@ def bot_indicadores_tecnicos(message):
                     '###### Payout ######'+
                     '\nDigital: '+str(Payout(par))+
                     '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
-                    '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨')
-            time.sleep(2)
+                    '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨'
     
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
     def desligar_terM(message):
