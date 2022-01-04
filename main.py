@@ -1063,6 +1063,9 @@ def bot_indicadores_tecnicos(message):
             f=datetime.fromtimestamp(timestamp_).strftime('%H:%M')               
             if oscdif != mavBuy:
                 oscdif = mavBuy
+                
+                para_automaticamente=para_automaticamente+1
+                if para_automaticamente==10: break
                 if ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavShell)+int(oscShell)+int(sumShell))) and  ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavHold)+int(oscHold)+int(sumHold))):
                     #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
                     message = bot.send_message(message.chat.id, 
@@ -1091,10 +1094,7 @@ def bot_indicadores_tecnicos(message):
                     '⏰'+str(f)+
                     '\n🚨INDECISÃO--> NÃO ENTRAR'+
                     '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+'##\n\n')
-                if para_automaticamente==10:
-                    ligado = False
-                    break
-    
+                   
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
     def desligar_terM(message):
         global ligado
