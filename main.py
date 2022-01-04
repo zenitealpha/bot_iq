@@ -258,9 +258,21 @@ def listar_bots(message):
         markup.row(itembtna, itembtnb)
         markup.row(itembtnc, itembtnd, itembtne)
         markup.row(itembtng, itembtnf, itembtnh)
-        bot.send_message(message.chat.id,
-                         "Bots disponíveis para o plano ouro",
-                         reply_markup=markup)
+        bot.send_message(message.chat.id,"Bots disponíveis para o plano ouro",reply_markup=markup)
+
+    elif (id_telegram == id_user) and (estado == 1) and plano == "Disponível":
+
+        markup = types.ReplyKeyboardMarkup(row_width=-1)
+        itembtna = types.KeyboardButton('Lista de Sinais')
+        itembtnb = types.KeyboardButton('MHI')
+        itembtnc = types.KeyboardButton('Catalogador')
+        itembtnf = types.KeyboardButton('Sinais ao Vivo')
+        itembtni = types.KeyboardButton('✅Fazer Login')
+        markup.row(itembtni)
+        markup.row(itembtnb, itembtnc)
+        markup.row(itembtnc,itembtnf)
+        bot.send_message(message.chat.id,"Bots disponíveis até ao momento",reply_markup=markup)
+
     elif (id_telegram == id_user) and (plano == "Grátis" or plano == "Bronze"
                                        or plano == "Prata"
                                        or plano == "Ouro") and estado != 1:
@@ -1044,8 +1056,7 @@ def bot_indicadores_tecnicos(message):
             sumShell = 0
             sumBuy = 0
             indicators = API.get_technical_indicators(par)
-            for data in indicators:
-                para_automaticamente=para_automaticamente+1
+            for data in indicators:   
                 if int(timec*60)==int(data['candle_size']):
                     if data['group'] == 'OSCILLATORS':
                         oscHold = oscHold + str(data).count('hold')
@@ -1060,11 +1071,11 @@ def bot_indicadores_tecnicos(message):
                         sumShell = sumShell + str(data).count('sell')
                         sumBuy = sumBuy + str(data).count('buy')   
             timestamp_ = int(round(datetime.now().timestamp()))
-            f=datetime.fromtimestamp(timestamp_).strftime('%H:%M')               
+            f=datetime.fromtimestamp(timestamp_+(6*60)).strftime('%H:%M')               
             if oscdif != mavBuy:
                 oscdif = mavBuy
-                
                 para_automaticamente=para_automaticamente+1
+                print(para_automaticamente)
                 if para_automaticamente==10: break
                 if ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavShell)+int(oscShell)+int(sumShell))) and  ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavHold)+int(oscHold)+int(sumHold))):
                     #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
@@ -1094,14 +1105,13 @@ def bot_indicadores_tecnicos(message):
                     '⏰'+str(f)+
                     '\n🚨INDECISÃO--> NÃO ENTRAR'+
                     '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+'##\n\n')
-                   
+    
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
     def desligar_terM(message):
         global ligado
         ligado = False
         bot.send_message(message.chat.id,"🔴Termómetro desligado!🔴")
         return
-                    
 
 @bot.message_handler(func=lambda message: message.text == 'Scalper')
 def bot_scalper(message):
