@@ -270,8 +270,9 @@ def listar_bots(message):
         itembtnf = types.KeyboardButton('Sinais ao Vivo')
         itembtni = types.KeyboardButton('✅Fazer Login')
         markup.row(itembtni)
+        markup.row(itembtna)
         markup.row(itembtnb, itembtnc)
-        markup.row(itembtnc,itembtnf)
+        markup.row(itembtnf)
         bot.send_message(message.chat.id,"Bots disponíveis até ao momento",reply_markup=markup)
 
     elif (id_telegram == id_user) and (plano == "Grátis" or plano == "Bronze"
