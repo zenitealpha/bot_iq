@@ -1030,6 +1030,7 @@ def bot_indicadores_tecnicos(message):
         oscdif = 30
 
         while ligado:
+            sleep(2)
             # Info Oscillators
             oscHold = 0 
             oscShell = 0
@@ -1101,8 +1102,7 @@ def bot_indicadores_tecnicos(message):
                     '\nDigital: '+str(Payout(par))+
                     '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
                     '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨'
-            sleep(2)
-    
+                
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar')
     def desligar_terM(message):
         global ligado
