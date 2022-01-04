@@ -17,6 +17,7 @@ all_files = []
 contents = repo.get_contents("")
 content = str(contents)
 
+
 login_dict = {}
 class login:
     def __init__(self, email):
@@ -305,7 +306,11 @@ def listar_bots(message):
 
 @bot.message_handler(func=lambda message: message.text == 'Lista de Sinais')
 def bot_lista_sinais(message):
-
+    git_file ='{}.txt'.format(message.chat.id)
+    if git_file in content:
+        pass
+    else:
+        repo.create_file(git_file, "committing files", '')
     markup = types.ReplyKeyboardMarkup(row_width=-1)
     itembtna = types.KeyboardButton('✅Ligar Bot de Sinais')
     itembtnb = types.KeyboardButton('🔴Desligar Bot de Sinais')
@@ -1112,7 +1117,7 @@ def bot_indicadores_tecnicos(message):
         ligado = False
         bot.send_message(message.chat.id,"🔴Termómetro desligado!🔴")
         return
-
+                    
 @bot.message_handler(func=lambda message: message.text == 'Scalper')
 def bot_scalper(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
@@ -1253,7 +1258,7 @@ def process_add_lista_step(message):
             if lista != '':
                 git_file ='{}.txt'.format(message.chat.id)
                 if git_file in content:
-                    repo.create_file(git_file, "committing files", lista)
+                    repo.update_file(git_file, "committing files", lista)
                 else:
                     repo.create_file(git_file, "committing files", lista)
             else:
@@ -1729,4 +1734,3 @@ def process_guardar_cat_step(message):
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 bot.polling(none_stop=True, interval=0)
-    
