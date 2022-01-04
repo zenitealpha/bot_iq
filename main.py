@@ -1046,8 +1046,7 @@ def bot_indicadores_tecnicos(message):
             indicators = API.get_technical_indicators(par)
             for data in indicators:
                 para_automaticamente=para_automaticamente+1
-                if para_automaticamente==10: 
-                    global ligado
+                if para_automaticamente==10:
                     ligado = False
                     break
                 if int(timec*60)==int(data['candle_size']):
