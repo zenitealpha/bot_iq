@@ -1727,8 +1727,5 @@ def process_guardar_cat_step(message):
 
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
-while True:
-    try:
-        bot.polling(none_stop=True, interval=0)
-    except:
-        time.sleep(2)
+bot.polling(none_stop=True, interval=0)
+    
