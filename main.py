@@ -1060,7 +1060,7 @@ def bot_indicadores_tecnicos(message):
                         sumShell = sumShell + str(data).count('sell')
                         sumBuy = sumBuy + str(data).count('buy')   
             timestamp_ = int(round(datetime.now().timestamp()))
-            f=datetime.fromtimestamp(timestamp_+(6*60)).strftime('%H:%M')               
+            f=datetime.fromtimestamp(timestamp_).strftime('%H:%M')               
             if oscdif != mavBuy:
                 oscdif = mavBuy
                 if ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavShell)+int(oscShell)+int(sumShell))) and  ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavHold)+int(oscHold)+int(sumHold))):
