@@ -1029,7 +1029,7 @@ def bot_indicadores_tecnicos(message):
         par = str(dados_config_term.par).upper() # trader[1] # paridade
         timec = int(dados_config_term.timeframe)#int(trader[2]) # time candle 1 5 15 min
         oscdif = 30
-
+        para_automaticamente = 0
         while ligado:
             # Info Oscillators
             oscHold = 0 
@@ -1045,6 +1045,11 @@ def bot_indicadores_tecnicos(message):
             sumBuy = 0
             indicators = API.get_technical_indicators(par)
             for data in indicators:
+                para_automaticamente=para_automaticamente+1
+                if para_automaticamente==10: 
+                    global ligado
+                    ligado = False
+                    break
                 if int(timec*60)==int(data['candle_size']):
                     if data['group'] == 'OSCILLATORS':
                         oscHold = oscHold + str(data).count('hold')
@@ -1059,7 +1064,7 @@ def bot_indicadores_tecnicos(message):
                         sumShell = sumShell + str(data).count('sell')
                         sumBuy = sumBuy + str(data).count('buy')   
             timestamp_ = int(round(datetime.now().timestamp()))
-            f=datetime.fromtimestamp(timestamp_).strftime('%H:%M')               
+            f=datetime.fromtimestamp(timestamp_+(6*60)).strftime('%H:%M')               
             if oscdif != mavBuy:
                 oscdif = mavBuy
                 if ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavShell)+int(oscShell)+int(sumShell))) and  ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavHold)+int(oscHold)+int(sumHold))):
@@ -1070,11 +1075,7 @@ def bot_indicadores_tecnicos(message):
                     '\n===========================\n'+
                     '⏰'+str(f)+
                     '\n✅CALL'+
-                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
-                    '###### Payout ######'+
-                    '\nDigital: '+str(Payout(par))+
-                    '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
-                    '🚨Utiliza no máximo 🐔 em caso de LOSS')
+                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+'##\n\n')
     
                 elif ((int(mavShell)+int(oscShell)+int(sumShell)) > (int(mavBuy)+int(oscBuy)+int(sumBuy))) and  ((int(mavShell)+int(oscShell)+int(sumShell)) > (int(mavHold)+int(oscHold)+int(sumHold))):
                     #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
@@ -1083,12 +1084,8 @@ def bot_indicadores_tecnicos(message):
                     '[DATA: '+str(datetime.now().strftime('%Y-%m-%d'))+']'+
                     '\n===========================\n'+
                     '⏰'+str(f)+
-                    '\n🔴PUTL'+
-                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
-                    '###### Payout ######'+
-                    '\nDigital: '+str(Payout(par))+
-                    '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
-                    '🚨Utiliza no máximo 🐔 em caso de LOSS')
+                    '\n🔴PUT'+
+                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+'##\n\n')
                 elif ((int(mavHold)+int(oscHold)+int(sumHold))>(int(mavBuy)+int(oscBuy)+int(sumBuy))) and ((int(mavHold)+int(oscHold)+int(sumHold))>(int(mavShell)+int(oscShell)+int(sumShell))):
                     #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
                     message = bot.send_message(message.chat.id, 
@@ -1097,11 +1094,7 @@ def bot_indicadores_tecnicos(message):
                     '\n===========================\n'+
                     '⏰'+str(f)+
                     '\n🚨INDECISÃO--> NÃO ENTRAR'+
-                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
-                    '###### Payout ######'+
-                    '\nDigital: '+str(Payout(par))+
-                    '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
-                    '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨')
+                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+'##\n\n')
     
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
     def desligar_terM(message):
