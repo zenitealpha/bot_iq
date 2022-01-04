@@ -1031,7 +1031,7 @@ def bot_indicadores_tecnicos(message):
         oscdif = 30
 
         while ligado:
-            sleep(2)
+            time.sleep(2)
             # Info Oscillators
             oscHold = 0 
             oscShell = 0
