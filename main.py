@@ -1083,7 +1083,7 @@ def bot_indicadores_tecnicos(message):
                     '[DATA: '+str(datetime.now().strftime('%Y-%m-%d'))+']'+
                     '\n===========================\n'+
                     '⏰'+str(f)+
-                    '\n🔴PUTL'+
+                    '\n🔴PUT'+
                     '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
                     '###### Payout ######'+
                     '\nDigital: '+str(Payout(par))+
