@@ -967,7 +967,7 @@ def bot_catalogador(message):
 def bot_indicadores_tecnicos(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
     itembtna = types.KeyboardButton('✅Ligar Termómetro')
-    itembtnb = types.KeyboardButton('🔴Desligar')
+    itembtnb = types.KeyboardButton('🔴Desligar Termómetro')
     itembtnc = types.KeyboardButton('⚙Configurar Termómetro')
     itembtnd = types.KeyboardButton('Ajuda')
     itembtne = types.KeyboardButton('🤖Listar Bots')
@@ -983,7 +983,8 @@ def bot_indicadores_tecnicos(message):
         chat_id = message.chat.id
         dados_config_login = login_dict[chat_id]
         dados_config_term = config_term[chat_id]
-        if (dados_config_login.email == None) or (dados_config_login.senha== None):
+        if (dados_config_login.email == None) or (dados_config_login.senha
+                                                  == None):
             bot.send_message(message.chat.id,'🚨Erro verifique os dados de Login e tente novamente🚨')
         else:
             usuario = dados_config_login.email  # input("Digite o usuário da IQ Option: ")
@@ -1083,7 +1084,7 @@ def bot_indicadores_tecnicos(message):
                     '[DATA: '+str(datetime.now().strftime('%Y-%m-%d'))+']'+
                     '\n===========================\n'+
                     '⏰'+str(f)+
-                    '\n🔴PUT'+
+                    '\n🔴PUTL'+
                     '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
                     '###### Payout ######'+
                     '\nDigital: '+str(Payout(par))+
@@ -1101,14 +1102,15 @@ def bot_indicadores_tecnicos(message):
                     '###### Payout ######'+
                     '\nDigital: '+str(Payout(par))+
                     '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
-                    '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨'
-                
-    @bot.message_handler(func=lambda message: message.text == '🔴Desligar')
+                    '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨')
+    
+    @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
     def desligar_terM(message):
         global ligado
         ligado = False
         bot.send_message(message.chat.id,"🔴Termómetro desligado!🔴")
-                   
+        return
+                    
 
 @bot.message_handler(func=lambda message: message.text == 'Scalper')
 def bot_scalper(message):
@@ -1723,7 +1725,10 @@ def process_guardar_cat_step(message):
     except Exception as e:
         bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
-sleep(2)
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
-bot.infinity_polling(allowed_updates=util.update_types)
+while True:
+    try:
+        bot.polling(none_stop=True, interval=0)
+    except:
+        sleep(2)
