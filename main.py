@@ -46,6 +46,12 @@ class lista_sinais_config:
         self.stop_loss = None
         self.stop_gain = None
 
+config_term = {}
+class termometro_config:
+    def __init__(self, par):
+        self.par = par
+        self.timeframe = None
+        
 config_catalogador = {}
 class catalogador_config:
     def __init__(self, time_frame):
@@ -113,7 +119,14 @@ def send_welcome(message):
             markup.row(itembtng)
             bot.send_message(message.chat.id, "Olá tudo bem " + message.from_user.first_name +
             '\nBem vindo de volta ao ROBÔ ALPHA',reply_markup=markup)
-
+            try:
+                git_file ='lista_catalogada_{}.txt'.format(message.chat.id)
+                if git_file in content:
+                    pass
+                else:
+                    repo.create_file(git_file, "committing files", '')  
+            except:
+                pass      
         elif message.chat.type == 'private' and id_telegram == id_user and estado == 1 and plano == 'super_admin':
             '''
             id_user = message.from_user.id
@@ -121,6 +134,14 @@ def send_welcome(message):
             if (not nao_exist(str(id_user))):
                 file.close()
             '''
+            try:
+                git_file ='lista_catalogada_{}.txt'.format(message.chat.id)
+                if git_file in content:
+                    pass
+                else:
+                    repo.create_file(git_file, "committing files", '')  
+            except:
+                pass 
             markup = types.ReplyKeyboardMarkup(row_width=-1)
             itembtna = types.KeyboardButton('✅Add usuário')
             itembtnb = types.KeyboardButton('Excluir usuário')
@@ -142,6 +163,14 @@ def send_welcome(message):
             if (not nao_exist(str(id_user))):
                 file.close()
             '''
+            try:
+                git_file ='lista_catalogada_{}.txt'.format(message.chat.id)
+                if git_file in content:
+                    pass
+                else:
+                    repo.create_file(git_file, "committing files", '')  
+            except:
+                pass 
             markup = types.ReplyKeyboardMarkup(row_width=-1)
             itembtna = types.KeyboardButton('Prestar Suporte')
             itembtnb = types.KeyboardButton('Dados do Usuário')
@@ -204,7 +233,7 @@ def listar_bots(message):
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('Lista de Sinais')
         itembtnb = types.KeyboardButton('MHI')
-        itembtnc = types.KeyboardButton('Catalogador de Sinais')
+        itembtnc = types.KeyboardButton('Catalogador')
         itembtnd = types.KeyboardButton('Estratégia Chinesa')
         itembtne = types.KeyboardButton('✅Fazer Login')
         markup.row(itembtne)
@@ -218,11 +247,11 @@ def listar_bots(message):
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('Lista de Sinais')
         itembtnb = types.KeyboardButton('MHI')
-        itembtnc = types.KeyboardButton('Catalogador de Sinais')
+        itembtnc = types.KeyboardButton('Catalogador')
         itembtnd = types.KeyboardButton('Estratégia Chinesa')
-        itembtne = types.KeyboardButton('Tendência de sinais')
+        itembtne = types.KeyboardButton('Tendência')
         itembtng = types.KeyboardButton('Estratégia Berman')
-        itembtnf = types.KeyboardButton('Tedência por Termómetro')
+        itembtnf = types.KeyboardButton('Sinais ao Vivo')
         itembtnh = types.KeyboardButton('Scalper')
         itembtni = types.KeyboardButton('✅Fazer Login')
         markup.row(itembtni)
@@ -247,11 +276,11 @@ def listar_bots(message):
         markup = types.ReplyKeyboardMarkup(row_width=-1)
         itembtna = types.KeyboardButton('Lista de Sinais')
         itembtnb = types.KeyboardButton('MHI')
-        itembtnc = types.KeyboardButton('Catalogador de Sinais')
+        itembtnc = types.KeyboardButton('Catalogador')
         itembtnd = types.KeyboardButton('Estratégia Chinesa')
-        itembtne = types.KeyboardButton('CopyTrade')
+        itembtne = types.KeyboardButton('Tendência')
         itembtng = types.KeyboardButton('Estratégia Berman')
-        itembtnf = types.KeyboardButton('Indicadores Técnicos')
+        itembtnf = types.KeyboardButton('Sinais ao Vivo')
         itembtni = types.KeyboardButton('Scalper')
         itembtnh = types.KeyboardButton('🔙VOLTAR')
         itembtnj = types.KeyboardButton('✅Fazer Login')
@@ -319,7 +348,9 @@ def bot_lista_sinais(message):
                 if d != False:
                     d = round(int(d) / 100, 2)
                     break
+
             API.unsubscribe_strike_list(par, 1)
+
             return d
 
         if (dados_config_login.email == None) or (dados_config_login.senha == None):
@@ -481,7 +512,7 @@ def bot_mhi(message):
     bot.send_message(message.chat.id, "Bot de MHI", reply_markup=markup)
     
     @bot.message_handler(func=lambda message: message.text == '✅Ligar Bot de MHI')
-    def ligar_mhi(message):
+    def ligar(message):
         global ligado
         ligado = True
         bot.send_message(message.chat.id, "✅Bot de MHI ligado✅")
@@ -606,31 +637,22 @@ def bot_mhi(message):
 
             if entrar:
                 dir = False
-                velas = API.get_candles(par, 60, 3, time.time())
+                velas = API.get_candles(par, (time_frame*60), 3, time())
 
-                velas[0] = 'g' if velas[0]['open'] < velas[0][
-                    'close'] else 'r' if velas[0]['open'] > velas[0][
-                        'close'] else 'd'
-                velas[1] = 'g' if velas[1]['open'] < velas[1][
-                    'close'] else 'r' if velas[1]['open'] > velas[1][
-                        'close'] else 'd'
-                velas[2] = 'g' if velas[2]['open'] < velas[2][
-                    'close'] else 'r' if velas[2]['open'] > velas[2][
-                        'close'] else 'd'
+                velas[0] = 'g' if velas[0]['open'] < velas[0][ 'close'] else 'r' if velas[0]['open'] > velas[0]['close'] else 'd'
+                velas[1] = 'g' if velas[1]['open'] < velas[1]['close'] else 'r' if velas[1]['open'] > velas[1]['close'] else 'd'
+                velas[2] = 'g' if velas[2]['open'] < velas[2]['close'] else 'r' if velas[2]['open'] > velas[2]['close'] else 'd'
 
                 cores = velas[0] + ' ' + velas[1] + ' ' + velas[2]
 
-                if cores.count('g') > cores.count('r') and cores.count(
-                        'd') == 0:
+                if cores.count('g') > cores.count('r') and cores.count('d') == 0:
                     dir = ('put' if tipo_mhi == 1 else 'call')
-                if cores.count('r') > cores.count('g') and cores.count(
-                        'd') == 0:
+                if cores.count('r') > cores.count('g') and cores.count('d') == 0:
                     dir = ('call' if tipo_mhi == 1 else 'put')
 
                 if dir:
 
-                    bot.send_message(
-                        message.chat.id, '✅Uma operação em andamento✅' +
+                    bot.send_message(message.chat.id, '✅Uma operação em andamento✅' +
                         '\nTempo de análise: ' + str(minutos) + '⏰' +
                         '\nCor da entrada: ' +
                         str('💹' if dir == 'call' else '🚨') + '\nDireção: ' +
@@ -713,7 +735,7 @@ def bot_estrategia_chinesa(message):
     markup.row(itembtnd, itembtne)
     bot.send_message(message.chat.id,"Bot de Estratégia Chinesa",reply_markup=markup)
 
-@bot.message_handler(func=lambda message: message.text == 'Tendência de sinais')
+@bot.message_handler(func=lambda message: message.text == 'Tendência')
 def bot_copytrade(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
     itembtna = types.KeyboardButton('✅Ligar Tendência de sinais')
@@ -799,7 +821,7 @@ def bot_estrategia_berman(message):
     markup.row(itembtnd, itembtne)
     bot.send_message(message.chat.id,"Bot de Estratégia Berman",reply_markup=markup)
 
-@bot.message_handler(func=lambda message: message.text == 'Catalogador de Sinais')
+@bot.message_handler(func=lambda message: message.text == 'Catalogador')
 def bot_catalogador(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
     itembtna = types.KeyboardButton('✅Ligar Catalogador')
@@ -932,27 +954,162 @@ def bot_catalogador(message):
                                 msg += ' | MG ' + str(i+1) + ' - ' + str(catalogacao[par][horario]['mg'+str(i+1)]['%']) + '%'
                             else:
                                 msg += ' | MG ' + str(i+1) + ' - N/A' 
-
-                    open('sinais_' + str((datetime.now()).strftime('%Y-%m-%d')) + '_' + str(timeframe) + 'M.txt', 'a').write(horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip() + '\n')
+                                
+                    open('lista_catalogada_{}.txt'.format(message.chat.id), 'a').write(horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip() + '\n')
 
                     hora_cat = horario.split(':')
                     hora_atual=datetime.now().strftime('%H:%M').split(':')
-                    if int(hora_cat[0])>=int(hora_atual[0]):
+                    if (int(hora_cat[0])==int(hora_atual[0])) or (int(hora_cat[0])>int(hora_atual[0])):
                         rs = horario + ',' + par + ',' + catalogacao[par][horario]['dir'].strip()
                         bot.send_message(message.chat.id,rs)
 
-@bot.message_handler(func=lambda message: message.text == 'Tedência por Termómetro')
+@bot.message_handler(func=lambda message: message.text == 'Sinais ao Vivo')
 def bot_indicadores_tecnicos(message):
     markup = types.ReplyKeyboardMarkup(row_width=-1)
-    itembtna = types.KeyboardButton('✅Ligar')
-    itembtnb = types.KeyboardButton('Desligar')
-    itembtnc = types.KeyboardButton('Configurações')
+    itembtna = types.KeyboardButton('✅Ligar Termómetro')
+    itembtnb = types.KeyboardButton('🔴Desligar Termómetro')
+    itembtnc = types.KeyboardButton('⚙Configurar Termómetro')
     itembtnd = types.KeyboardButton('Ajuda')
     itembtne = types.KeyboardButton('🤖Listar Bots')
     markup.row(itembtna, itembtnb)
     markup.row(itembtnc)
     markup.row(itembtnd, itembtne)
-    bot.send_message(message.chat.id, "Tedência por Termómetro", reply_markup=markup)
+    bot.send_message(message.chat.id,"🌡Tedência por Termómetro🌡", reply_markup=markup)
+
+    @bot.message_handler(func=lambda message: message.text == '✅Ligar Termómetro')
+    def ligar_termometro(message):
+        global ligado
+        ligado = True
+        chat_id = message.chat.id
+        dados_config_login = login_dict[chat_id]
+        dados_config_term = config_term[chat_id]
+        if (dados_config_login.email == None) or (dados_config_login.senha
+                                                  == None):
+            bot.send_message(message.chat.id,'🚨Erro verifique os dados de Login e tente novamente🚨')
+        else:
+            usuario = dados_config_login.email  # input("Digite o usuário da IQ Option: ")
+            senha = dados_config_login.senha  #getpass.getpass(f"Digite a senha da IQ Option: ")
+            API = IQ_Option(usuario, senha)
+            print(API.connect())
+
+        if API.check_connect():
+            bot.send_message(message.chat.id, '✅Conectado com sucesso!✅')
+        else:
+            bot.send_message(message.chat.id, '🚨Erro ao se conectar🚨')
+            return
+
+        def bin_payout(par, timeframe):
+            par = par.upper()
+            tb = API.get_all_profit()
+            API.subscribe_strike_list(par, timeframe)
+            tentativas = 0
+            while True:
+                d = API.get_digital_current_profit(par, timeframe)
+                if d != False:
+                    d = int(d)
+                    break                
+            API.unsubscribe_strike_list(par, timeframe)
+            
+            payout = {'binario': 0, 'digital': d}
+            vl = int(100 * tb[par]['binary'])
+            
+            return vl
+
+        def Payout(par):
+            API.subscribe_strike_list(par, 1)
+            while True:
+                d = API.get_digital_current_profit(par, 1)
+                if d != False:
+                    d = round(int(d) / 100, 2)
+                    break
+            API.unsubscribe_strike_list(par, 1)
+
+            return (d*100)
+
+        par = str(dados_config_term.par).upper() # trader[1] # paridade
+        timec = int(dados_config_term.timeframe)#int(trader[2]) # time candle 1 5 15 min
+        oscdif = 30
+
+        while ligado:
+            # Info Oscillators
+            oscHold = 0 
+            oscShell = 0
+            oscBuy = 0
+            # Info Moving Averages
+            mavHold = 0 
+            mavShell = 0
+            mavBuy = 0
+            #
+            sumHold = 0 
+            sumShell = 0
+            sumBuy = 0
+            indicators = API.get_technical_indicators(par)
+            for data in indicators:
+                if int(timec*60)==int(data['candle_size']):
+                    if data['group'] == 'OSCILLATORS':
+                        oscHold = oscHold + str(data).count('hold')
+                        oscShell = oscShell + str(data).count('sell')
+                        oscBuy = oscBuy + str(data).count('buy')                    
+                    if data['group'] == 'MOVING AVERAGES':
+                        mavHold = mavHold + str(data).count('hold')
+                        mavShell = mavShell + str(data).count('sell')
+                        mavBuy = mavBuy + str(data).count('buy')    
+                    if data['group'] == 'SUMMARY':
+                        sumHold = sumHold + str(data).count('hold')
+                        sumShell = sumShell + str(data).count('sell')
+                        sumBuy = sumBuy + str(data).count('buy')   
+            timestamp_ = int(round(datetime.now().timestamp()))
+            f=datetime.fromtimestamp(timestamp_+(6*60)).strftime('%H:%M')               
+            if oscdif != mavBuy:
+                oscdif = mavBuy
+                if ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavShell)+int(oscShell)+int(sumShell))) and  ((int(mavBuy)+int(oscBuy)+int(sumBuy)) > (int(mavHold)+int(oscHold)+int(sumHold))):
+                    #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
+                    message = bot.send_message(message.chat.id, 
+                    '✅## Tendência do Sinal ##✅\n\n'+
+                    '[DATA: '+str(datetime.now().strftime('%Y-%m-%d'))+']'+
+                    '\n===========================\n'+
+                    '⏰'+str(f)+
+                    '\n✅CALL'+
+                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
+                    '###### Payout ######'+
+                    '\nDigital: '+str(Payout(par))+
+                    '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
+                    '🚨Utiliza no máximo 🐔 em caso de LOSS')
+    
+                elif ((int(mavShell)+int(oscShell)+int(sumShell)) > (int(mavBuy)+int(oscBuy)+int(sumBuy))) and  ((int(mavShell)+int(oscShell)+int(sumShell)) > (int(mavHold)+int(oscHold)+int(sumHold))):
+                    #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
+                    message = bot.send_message(message.chat.id, 
+                    '✅## Tendência do Sinal ##✅\n\n'+
+                    '[DATA: '+str(datetime.now().strftime('%Y-%m-%d'))+']'+
+                    '\n===========================\n'+
+                    '⏰'+str(f)+
+                    '\n🔴PUTL'+
+                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
+                    '###### Payout ######'+
+                    '\nDigital: '+str(Payout(par))+
+                    '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
+                    '🚨Utiliza no máximo 🐔 em caso de LOSS')
+                elif ((int(mavHold)+int(oscHold)+int(sumHold))>(int(mavBuy)+int(oscBuy)+int(sumBuy))) and ((int(mavHold)+int(oscHold)+int(sumHold))>(int(mavShell)+int(oscShell)+int(sumShell))):
+                    #if msgid > 0: bot.delete_message(session.chat.id, msgid) ⏰%Y-%m-%d
+                    message = bot.send_message(message.chat.id, 
+                    '✅## Tendência do Sinal ##✅\n\n'+
+                    '[DATA: '+str(datetime.now().strftime('%Y-%m-%d'))+']'+
+                    '\n===========================\n'+
+                    '⏰'+str(f)+
+                    '\n🚨INDECISÃO--> NÃO ENTRAR'+
+                    '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+' Min ##\n\n'+
+                    '###### Payout ######'+
+                    '\nDigital: '+str(Payout(par))+
+                    '\nBinário: '+str(bin_payout(par,timec))+'\n\n'
+                    '🚨NÃO OPERE-> INDECISÃO NO MERCADO🚨')
+    
+    @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
+    def desligar_terM(message):
+        global ligado
+        ligado = False
+        bot.send_message(message.chat.id,"🔴Termómetro desligado!🔴")
+        return
+                    
 
 @bot.message_handler(func=lambda message: message.text == 'Scalper')
 def bot_scalper(message):
@@ -1094,8 +1251,6 @@ def process_add_lista_step(message):
             if lista != '':
                 git_file ='{}.txt'.format(message.chat.id)
                 if git_file in content:
-                    contents = repo.get_contents("{}.txt".format(message.chat.id))
-                    #repo.delete_file(contents.path, "remove {}.txt".format(message.chat.id), contents.sha)
                     repo.create_file(git_file, "committing files", lista)
                 else:
                     repo.create_file(git_file, "committing files", lista)
@@ -1105,6 +1260,42 @@ def process_add_lista_step(message):
         except Exception as e:
             bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
 
+@bot.message_handler(func=lambda message: message.text == '⚙Configurar Termómetro')
+def Configurar_Termometro(message):
+        msg=bot.reply_to(message,"✅Dgite a Paridade a analisar✅"
+                                 +"\nObs: O termómetro funciona apenas em mercado normal")
+        bot.register_next_step_handler(msg, process_add_par_term)
+
+def process_add_par_term(message):
+        try:
+            chat_id = message.chat.id
+            par = message.text
+            if par.isdigit() or par == '':
+                msg = bot.reply_to(message,'❌Opção inválida, escolha por Ex.: EURUSD')
+                bot.register_next_step_handler(msg, process_add_par_term)
+                return
+            dados = termometro_config(par)
+            config_term[chat_id] = dados
+            msg = bot.reply_to(message, 'Defina o Time Frame')
+            bot.register_next_step_handler(msg, process_add_time_term)
+        except Exception as e:
+            bot.reply_to(message, '❌Upsi, houve um erro, tente novamente➡ /start')
+
+def process_add_time_term(message):
+    
+    chat_id = message.chat.id
+    time_frame = message.text
+    if (not time_frame.isdigit()):
+            msg = bot.reply_to(message,'❌Opção inválida, escolha: \n1 para M1, 5 para M5 ou 15 para M15:')
+            bot.register_next_step_handler(msg, process_add_time_term)
+            return
+    dados = config_term[chat_id]
+    dados.timeframe = time_frame
+    bot.send_message(message.chat.id, 'Dados salvos com sucesso\n'+
+                '\nParidade: '+dados.par+
+                '\nTime Frame: '+dados.timeframe+
+                '\n\nCaso queiras retificar clique em ⚙Configurar Termómetro')
+        
 @bot.message_handler(func=lambda message: message.text == '⚙Configurar Bot de MHI')
 def config_do_mhi(message):
         msg = bot.reply_to(
@@ -1124,8 +1315,7 @@ def process_conta_step(message):
                 return
             dados = mhi_config(conta)
             config_mhi[chat_id] = dados
-            msg = bot.reply_to(message,
-                            'Desejas operar na\n  1 - Digital\n  2 - Binaria:')
+            msg = bot.reply_to(message,'Desejas operar na\n  1 - Digital\n  2 - Binaria:')
             bot.register_next_step_handler(msg, process_operacao_step)
         except Exception as e:
             bot.reply_to(message,
@@ -1174,7 +1364,7 @@ def process_time_frame_step(message):
         try:
             chat_id = message.chat.id
             time_frame = message.text
-            if not time_frame.isdigit():
+            if (not time_frame.isdigit()):
                 msg = bot.reply_to(
                     message,
                     '❌Opção inválida, escolha: \n1 para M1, 5 para M5 ou 15 para M15:'
@@ -1196,9 +1386,7 @@ def process_par_step(message):
             chat_id = message.chat.id
             par = message.text
             if par.isdigit() or par == '':
-                msg = bot.reply_to(
-                    message,
-                    '❌Opção inválida, escolha por Ex.: EURUSD ou EURUSD-OTC:')
+                msg = bot.reply_to(message,'❌Opção inválida, escolha por Ex.: EURUSD')
                 bot.register_next_step_handler(msg, process_par_step)
                 return
             dados = config_mhi[chat_id]
@@ -1524,7 +1712,7 @@ def process_guardar_cat_step(message):
                 '\nTime Frame: M'+str(dados.time_frame)+
                 '\nQuantidade de dias: '+str(dados.dias)+
                 '\nPorcentagem: '+str(dados.porcentagem)+
-                '\nNível de Martingale: '+str(dados.martingale))
+                '\nNível de Martingale:'+str(dados.martingale))
 
             bot_catalogador(message)
         else:
