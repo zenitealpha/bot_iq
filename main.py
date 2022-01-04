@@ -1731,4 +1731,4 @@ while True:
     try:
         bot.polling(none_stop=True, interval=0)
     except:
-        sleep(2)
+        time.sleep(2)
