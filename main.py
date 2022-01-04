@@ -1046,9 +1046,6 @@ def bot_indicadores_tecnicos(message):
             indicators = API.get_technical_indicators(par)
             for data in indicators:
                 para_automaticamente=para_automaticamente+1
-                if para_automaticamente==10:
-                    ligado = False
-                    break
                 if int(timec*60)==int(data['candle_size']):
                     if data['group'] == 'OSCILLATORS':
                         oscHold = oscHold + str(data).count('hold')
@@ -1094,6 +1091,9 @@ def bot_indicadores_tecnicos(message):
                     '⏰'+str(f)+
                     '\n🚨INDECISÃO--> NÃO ENTRAR'+
                     '\n## PAR: '+str(par).upper()+' | EXP: M'+str(timec)+'##\n\n')
+                if para_automaticamente==10:
+                    ligado = False
+                    break
     
     @bot.message_handler(func=lambda message: message.text == '🔴Desligar Termómetro')
     def desligar_terM(message):
